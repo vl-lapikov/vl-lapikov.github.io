@@ -1,0 +1,32 @@
+.cell {
+    width: 20px;
+    height: 20px;
+    float: left;
+    border: 1px;
+    border-color: #b9daff;
+    border-style: solid;
+}
+
+.object {
+    position: relative;
+}
+
+.size-1 {
+    font-size: 20px !important;
+}
+
+.size-2 {
+    font-size: 40px !important;
+}
+
+.size-3 {
+    font-size: 60px !important;;
+}
+
+.size-4 {
+    font-size: 80px !important;
+}
+
+.size-5 {
+    font-size: 100px !important;
+}
