@@ -76,11 +76,11 @@
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
-	var _initialState = __webpack_require__(238);
+	var _initialState = __webpack_require__(239);
 
 	var _initialState2 = _interopRequireDefault(_initialState);
 
-	var _events = __webpack_require__(239);
+	var _events = __webpack_require__(240);
 
 	var _events2 = _interopRequireDefault(_events);
 
@@ -25430,9 +25430,7 @@
 
 	var mapStateToProps = function mapStateToProps(state) {
 	    return {
-	        playground: state.playground,
-	        grid: state.grid,
-	        objects: state.objects
+	        playground: state.playground
 	    };
 	};
 
@@ -25487,8 +25485,8 @@
 
 	            for (var colIndex = 0; colIndex < _this.props.playground.size.y; colIndex++) {
 	                var object = '';
-	                if (_this.props.grid[rowIndex][colIndex] !== 0) {
-	                    object = _this.props.grid[rowIndex][colIndex].draw();
+	                if (_this.props.playground.grid[rowIndex][colIndex] !== 0) {
+	                    object = _this.props.playground.grid[rowIndex][colIndex].draw();
 	                }
 
 	                result.push(_react2.default.createElement(
@@ -25510,10 +25508,7 @@
 	    _createClass(Playground, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props,
-	                playground = _props.playground,
-	                grid = _props.grid,
-	                objects = _props.objects;
+	            var playground = this.props.playground;
 
 
 	            var result = [];
@@ -25537,9 +25532,7 @@
 	}(_react.Component);
 
 	Playground.propTypes = {
-	    playground: _react.PropTypes.object.isRequired,
-	    grid: _react.PropTypes.array.isRequired,
-	    objects: _react.PropTypes.object.isRequired
+	    playground: _react.PropTypes.object.isRequired
 	};
 	exports.default = (0, _reactRedux.connect)()(Playground);
 
@@ -25555,6 +25548,8 @@
 	exports.keyUp = exports.keyDown = exports.moveObject = exports.move = undefined;
 	exports.tick = tick;
 	exports.movePlayer = movePlayer;
+	exports.moveRocketRight = moveRocketRight;
+	exports.moveRocketLeft = moveRocketLeft;
 
 	var _global = __webpack_require__(233);
 
@@ -25565,30 +25560,48 @@
 	function tick() {
 	    return function (dispatch, getState) {
 	        dispatch(movePlayer(getState().keyboard.direction));
+	        dispatch(moveRocketRight(getState().keyboard.direction));
+	        dispatch(moveRocketLeft(getState().keyboard.direction));
 	    };
-	};
+	}
 
-	var move = exports.move = function move(direction) {
+	var move = exports.move = function move(direction, object) {
 	    return {
 	        type: global.ACTION_MOVE,
-	        direction: direction
+	        direction: direction,
+	        object: object
 	    };
 	};
 
-	var moveObject = exports.moveObject = function moveObject(prevPosition, position, object) {
+	var moveObject = exports.moveObject = function moveObject(position) {
 	    return {
 	        type: global.ACTION_MOVE_OBJECT,
-	        prevPosition: prevPosition,
 	        position: position
 	    };
 	};
 
 	function movePlayer(direction) {
 	    return function (dispatch, getState) {
-	        var prevPosition = getState().objects.player.position;
-	        dispatch(move(direction));
-	        var player = getState().objects.player;
-	        dispatch(moveObject(prevPosition, player.position));
+	        dispatch(move(direction, 'player'));
+
+	        dispatch(moveObject(getState().objects.player.position));
+	    };
+	}
+
+	function moveRocketRight() {
+	    return function (dispatch, getState) {
+	        dispatch(move(global.objects.rocketRight.direction, 'rocketRight'));
+	        dispatch(moveObject(getState().objects.rocketRight.position));
+	    };
+	}
+
+	function moveRocketLeft() {
+	    return function (dispatch, getState) {
+	        dispatch(move(global.objects.rocketLeft.direction, 'rocketLeft'));
+
+	        console.log();
+
+	        dispatch(moveObject(getState().objects.rocketLeft.position));
 	    };
 	}
 
@@ -25621,28 +25634,69 @@
 	//
 	//export const PLAYGROUND_CELL_IN_PIXELS = ;
 
-	var PLAYGROUND_X = exports.PLAYGROUND_X = 30;
-	var PLAYGROUND_Y = exports.PLAYGROUND_Y = 30;
+	var playground = exports.playground = {
+	    size: {
+	        y: 30,
+	        x: 30
+	    },
+	    tick: 50
+	};
 
-	var PLAYER_X = exports.PLAYER_X = 0;
-	var PLAYER_Y = exports.PLAYER_Y = 0;
+	var objectSize = exports.objectSize = 3;
 
-	var PLAYER_SIZE = exports.PLAYER_SIZE = 3;
+	var positionPrevNull = exports.positionPrevNull = {
+	    y: null,
+	    x: null
+	};
 
-	var TICK_MILLISECONDS = exports.TICK_MILLISECONDS = 100;
+	var objects = exports.objects = {
+	    player: {
+	        position: {
+	            current: {
+	                y: 0,
+	                x: Math.floor(playground.size.x / 2)
+	            }
+	        }
+	    },
+	    rocketRight: {
+	        position: {
+	            current: {
+	                y: Math.floor(playground.size.y / 1.5),
+	                x: 0
+	            }
+	        },
+	        direction: {
+	            up: false,
+	            right: true,
+	            down: false,
+	            left: false
+	        }
+	    },
+	    rocketLeft: {
+	        position: {
+	            current: {
+	                y: 10,
+	                x: 29
+	            }
+	        },
+	        direction: {
+	            up: false,
+	            right: false,
+	            down: false,
+	            left: true
+	        }
+	    }
+	};
 
 	// Actions
-
 	var ACTION_MOVE = exports.ACTION_MOVE = 'gMove';
 	var ACTION_MOVE_OBJECT = exports.ACTION_MOVE_OBJECT = 'gMoveObject';
 	var ACTION_KEY_UP = exports.ACTION_KEY_UP = 'gKeyUp';
 	var ACTION_KEY_DOWN = exports.ACTION_KEY_DOWN = 'gKeyDown';
 
+	// Global functions
 	function isEqualPositions(pos1, pos2) {
-	    if (pos1.x == pos2.x && pos1.y == pos2.y) {
-	        return true;
-	    }
-	    return false;
+	    return pos1.x == pos2.x && pos1.y == pos2.y;
 	}
 
 /***/ },
@@ -25661,15 +25715,11 @@
 
 	var _playground2 = _interopRequireDefault(_playground);
 
-	var _grid = __webpack_require__(236);
-
-	var _grid2 = _interopRequireDefault(_grid);
-
 	var _objects = __webpack_require__(237);
 
 	var _objects2 = _interopRequireDefault(_objects);
 
-	var _keyboard = __webpack_require__(240);
+	var _keyboard = __webpack_require__(238);
 
 	var _keyboard2 = _interopRequireDefault(_keyboard);
 
@@ -25677,7 +25727,6 @@
 
 	var reducers = (0, _redux.combineReducers)({
 	    playground: _playground2.default,
-	    grid: _grid2.default,
 	    objects: _objects2.default,
 	    keyboard: _keyboard2.default
 	});
@@ -25694,6 +25743,8 @@
 	    value: true
 	});
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	var _global = __webpack_require__(233);
 
 	var global = _interopRequireWildcard(_global);
@@ -25705,6 +25756,18 @@
 	    var action = arguments[1];
 
 	    switch (action.type) {
+	        case global.ACTION_MOVE_OBJECT:
+	            if (global.isEqualPositions(action.position.prev, action.position.current)) {
+	                return state;
+	            }
+	            var grid = Object.assign([], state.grid);
+
+	            grid[action.position.current.y][action.position.current.x] = grid[action.position.prev.y][action.position.prev.x];
+	            grid[action.position.prev.y][action.position.prev.x] = 0;
+
+	            return _extends({}, state, {
+	                grid: grid
+	            });
 	        default:
 	            return state;
 	    }
@@ -25713,44 +25776,7 @@
 	exports.default = playground;
 
 /***/ },
-/* 236 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _global = __webpack_require__(233);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var grid = function grid() {
-	    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	    var action = arguments[1];
-
-	    switch (action.type) {
-	        case global.ACTION_MOVE_OBJECT:
-	            if (global.isEqualPositions(action.prevPosition, action.position)) {
-	                return state;
-	            }
-	            var grid = Object.assign([], state);
-
-	            grid[action.position.y][action.position.x] = grid[action.prevPosition.y][action.prevPosition.x];
-	            grid[action.prevPosition.y][action.prevPosition.x] = 0;
-
-	            return grid;
-	        default:
-	            return state;
-	    }
-	};
-
-	exports.default = grid;
-
-/***/ },
+/* 236 */,
 /* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -25768,6 +25794,8 @@
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 	var objects = function objects() {
 	    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    var action = arguments[1];
@@ -25775,52 +25803,10 @@
 	    switch (action.type) {
 	        case global.ACTION_MOVE:
 
-	            var position = state.player.position;
-	            for (var direction in action.direction) {
-	                if (!action.direction[direction]) {
-	                    continue;
-	                }
-	                switch (direction) {
-	                    case 'up':
-	                        if (position.y > 0) {
-	                            position = {
-	                                y: position.y - 1,
-	                                x: position.x
-	                            };
-	                        }
-	                        break;
-	                    case 'right':
-	                        if (position.x < global.PLAYGROUND_X - global.PLAYER_SIZE) {
-	                            position = {
-	                                y: position.y,
-	                                x: position.x + 1
-	                            };
-	                        }
-	                        break;
-	                    case 'down':
-	                        if (position.y < global.PLAYGROUND_Y - global.PLAYER_SIZE) {
-	                            position = {
-	                                y: position.y + 1,
-	                                x: position.x
-	                            };
-	                        }
-	                        break;
-	                    case 'left':
-	                        if (position.x > 0) {
-	                            position = {
-	                                y: position.y,
-	                                x: position.x - 1
-	                            };
-	                        }
-	                        break;
-	                }
-	            }
+	            var object = state[action.object];
+	            object.move(action.direction);
 
-	            return _extends({}, state, {
-	                player: _extends({}, state.player, {
-	                    position: position
-	                })
-	            });
+	            return _extends({}, state, _defineProperty({}, action.object, object));
 
 	        default:
 	            return state;
@@ -25831,133 +25817,6 @@
 
 /***/ },
 /* 238 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _global = __webpack_require__(233);
-
-	var global = _interopRequireWildcard(_global);
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var playground = {
-	    size: {
-	        x: global.PLAYGROUND_X,
-	        y: global.PLAYGROUND_Y
-	    }
-	};
-
-	function zeros(dimensions) {
-	    var array = [];
-
-	    for (var i = 0; i < dimensions[0]; ++i) {
-	        array.push(dimensions.length == 1 ? 0 : zeros(dimensions.slice(1)));
-	    }
-
-	    return array;
-	}
-	var grid = zeros([playground.size.y, playground.size.x]);
-
-	var player = {
-	    position: {
-	        x: global.PLAYER_X,
-	        y: global.PLAYER_Y
-	    },
-	    size: global.PLAYER_SIZE
-	};
-	var className = 'fa fa-github-alt size-' + player.size;
-	player.draw = function () {
-	    return _react2.default.createElement(
-	        'div',
-	        { className: 'object' },
-	        _react2.default.createElement('i', { className: className, 'aria-hidden': 'true' })
-	    );
-	};
-
-	grid[player.position.y][player.position.x] = player;
-
-	var keyboard = {
-	    direction: {
-	        up: false,
-	        right: false,
-	        down: false,
-	        left: false
-	    }
-	};
-
-	var initialState = {
-	    playground: playground,
-	    grid: grid,
-	    objects: {
-	        player: player
-	    },
-	    keyboard: keyboard
-	};
-
-	exports.default = initialState;
-
-/***/ },
-/* 239 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _actions = __webpack_require__(232);
-
-	var actions = _interopRequireWildcard(_actions);
-
-	var _global = __webpack_require__(233);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var initGlobalEvents = function initGlobalEvents(store) {
-	    document.addEventListener("keydown", function (target) {
-	        store.dispatch(actions.keyDown(getDirection(target.keyCode)));
-	    }, false);
-
-	    document.addEventListener("keyup", function (target) {
-	        store.dispatch(actions.keyUp(getDirection(target.keyCode)));
-	    }, false);
-
-	    setInterval(function () {
-	        store.dispatch(actions.tick());
-	    }, global.TICK_MILLISECONDS);
-	};
-
-	function getDirection(code) {
-	    switch (code) {
-	        case 38:
-	            return 'up';
-	        case 39:
-	            return 'right';
-	        case 40:
-	            return 'down';
-	        case 37:
-	            return 'left';
-	    }
-	}
-
-	exports.default = initGlobalEvents;
-
-/***/ },
-/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25989,6 +25848,326 @@
 	};
 
 	exports.default = keyboard;
+
+/***/ },
+/* 239 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _global = __webpack_require__(233);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _playground = __webpack_require__(242);
+
+	var _playground2 = _interopRequireDefault(_playground);
+
+	var _player = __webpack_require__(241);
+
+	var _player2 = _interopRequireDefault(_player);
+
+	var _rocket = __webpack_require__(243);
+
+	var _rocket2 = _interopRequireDefault(_rocket);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var keyboard = {
+	    direction: {
+	        up: false,
+	        right: false,
+	        down: false,
+	        left: false
+	    }
+	};
+
+	var rocketRight = Object.assign({}, _rocket2.default, {
+	    position: {
+	        prev: global.positionPrevNull,
+	        current: global.objects.rocketRight.position.current
+	    },
+	    direction: global.objects.rocketRight.direction
+	});
+	rocketRight.draw = function () {
+	    return _react2.default.createElement(
+	        'div',
+	        { className: 'object rocket-right' },
+	        _react2.default.createElement('i', { className: 'fa fa-rocket size-' + _rocket2.default.size, 'aria-hidden': 'true' })
+	    );
+	};
+
+	var rocketLeft = Object.assign({}, _rocket2.default, {
+	    position: {
+	        prev: global.positionPrevNull,
+	        current: global.objects.rocketLeft.position.current
+	    },
+	    direction: global.objects.rocketLeft.direction
+	});
+	rocketLeft.draw = function () {
+	    return _react2.default.createElement(
+	        'div',
+	        { className: 'object rocket-left' },
+	        _react2.default.createElement('i', { className: 'fa fa-rocket size-' + _rocket2.default.size, 'aria-hidden': 'true' })
+	    );
+	};
+
+	var objects = {
+	    player: _player2.default,
+	    rocketRight: rocketRight,
+	    rocketLeft: rocketLeft
+	};
+
+	for (var object in objects) {
+	    _playground2.default.updateObjectOnGrid(objects[object]);
+	}
+
+	var initialState = {
+	    playground: _playground2.default,
+	    objects: objects,
+	    keyboard: keyboard
+	};
+
+	exports.default = initialState;
+
+/***/ },
+/* 240 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _actions = __webpack_require__(232);
+
+	var actions = _interopRequireWildcard(_actions);
+
+	var _global = __webpack_require__(233);
+
+	var global = _interopRequireWildcard(_global);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var initGlobalEvents = function initGlobalEvents(store) {
+	    document.addEventListener("keydown", function (target) {
+	        store.dispatch(actions.keyDown(getDirection(target.keyCode)));
+	    }, false);
+
+	    document.addEventListener("keyup", function (target) {
+	        store.dispatch(actions.keyUp(getDirection(target.keyCode)));
+	    }, false);
+
+	    setInterval(function () {
+	        store.dispatch(actions.tick());
+	    }, global.playground.tick);
+	};
+
+	function getDirection(code) {
+	    switch (code) {
+	        case 38:
+	            return 'up';
+	        case 39:
+	            return 'right';
+	        case 40:
+	            return 'down';
+	        case 37:
+	            return 'left';
+	    }
+	}
+
+	exports.default = initGlobalEvents;
+
+/***/ },
+/* 241 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _global = __webpack_require__(233);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var player = {
+	    position: {
+	        prev: global.positionPrevNull,
+	        current: global.objects.player.position.current
+	    },
+	    size: global.objectSize,
+	    draw: function draw() {
+	        return _react2.default.createElement(
+	            'div',
+	            { className: 'object' },
+	            _react2.default.createElement('i', { className: 'fa fa-github-alt size-' + this.size, 'aria-hidden': 'true' })
+	        );
+	    },
+	    changePosition: function changePosition(yOffset, xOffset) {
+	        this.position.current.y += yOffset;
+	        this.position.current.x += xOffset;
+	    },
+	    move: function move(direction) {
+	        this.position.prev = Object.assign({}, this.position.current);
+	        for (var line in direction) {
+	            if (!direction[line]) {
+	                continue;
+	            }
+	            switch (line) {
+	                case 'up':
+	                    if (this.position.current.y > 0) {
+	                        this.changePosition(-1, 0);
+	                    }
+	                    break;
+	                case 'right':
+	                    if (this.position.current.x < global.playground.size.x - global.objectSize) {
+	                        this.changePosition(0, 1);
+	                    }
+	                    break;
+	                case 'down':
+	                    if (this.position.current.y < global.playground.size.y - global.objectSize) {
+	                        this.changePosition(1, 0);
+	                    }
+	                    break;
+	                case 'left':
+	                    if (this.position.current.x > 0) {
+	                        this.changePosition(0, -1);
+	                    }
+	                    break;
+	            }
+	        }
+	    }
+	};
+
+	exports.default = player;
+
+/***/ },
+/* 242 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _global = __webpack_require__(233);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function zeros(dimensions) {
+	    var array = [];
+
+	    for (var i = 0; i < dimensions[0]; ++i) {
+	        array.push(dimensions.length == 1 ? 0 : zeros(dimensions.slice(1)));
+	    }
+
+	    return array;
+	}
+
+	var playground = {
+	    size: global.playground.size,
+	    grid: zeros([global.playground.size.y, global.playground.size.x]),
+	    updateObjectOnGrid: function updateObjectOnGrid(object) {
+	        if (object.position.prev.y && object.position.prev.x) {
+	            this.grid[object.position.prev.y][object.position.prev.x] = 0;
+	        }
+
+	        this.grid[object.position.current.y][object.position.current.x] = object;
+	    }
+	};
+
+	exports.default = playground;
+
+/***/ },
+/* 243 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _global = __webpack_require__(233);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var rocket = {
+	    size: global.objectSize,
+	    changePosition: function changePosition(yOffset, xOffset) {
+	        this.position.current.y += yOffset;
+	        this.position.current.x += xOffset;
+	    },
+	    move: function move(direction) {
+	        this.position.prev = Object.assign({}, this.position.current);
+	        for (var line in direction) {
+	            if (!direction[line]) {
+	                continue;
+	            }
+	            switch (line) {
+	                case 'up':
+	                    if (this.position.current.y > 0) {
+	                        this.changePosition(-1, 0);
+	                    }
+	                    break;
+	                case 'right':
+	                    if (this.position.current.x < global.playground.size.x - global.objectSize) {
+	                        this.changePosition(0, 1);
+	                    }
+	                    break;
+	                case 'down':
+	                    if (this.position.current.y < global.playground.size.y - global.objectSize) {
+	                        this.changePosition(1, 0);
+	                    }
+	                    break;
+	                case 'left':
+	                    if (this.position.current.x > 0) {
+	                        this.changePosition(0, -1);
+	                    }
+	                    break;
+	            }
+	        }
+	    }
+	};
+	exports.default = rocket;
 
 /***/ }
 /******/ ]);

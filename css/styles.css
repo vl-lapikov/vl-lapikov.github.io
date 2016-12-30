@@ -30,3 +30,29 @@
 .size-5 {
     font-size: 100px !important;
 }
+
+@keyframes rocket-right {
+    0%   {transform: rotate(60deg);}
+    50%  {transform: rotate(25deg);}
+    100%  {transform: rotate(60deg);}
+}
+
+.rocket-right {
+    transform: rotate(40deg);
+    /*animation-name: rocket-right;*/
+    /*animation-duration: 2s;*/
+    /*animation-iteration-count: infinite;*/
+}
+
+@keyframes rocket-left {
+    0%   {transform: rotate(-115deg);}
+    50%  {transform: rotate(-155deg);}
+    100%  {transform: rotate(-115deg);}
+}
+
+.rocket-left {
+    transform: rotate(-135deg);
+    /*animation-name: rocket-left;*/
+    /*animation-duration: 2s;*/
+    /*animation-iteration-count: infinite;*/
+}
