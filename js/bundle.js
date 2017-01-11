@@ -62,32 +62,30 @@
 
 	var _reduxPromise2 = _interopRequireDefault(_reduxPromise);
 
-	var _reduxLogger = __webpack_require__(207);
+	var _reactRedux = __webpack_require__(207);
 
-	var _reduxLogger2 = _interopRequireDefault(_reduxLogger);
-
-	var _reactRedux = __webpack_require__(213);
-
-	var _PlaygroundContainer = __webpack_require__(230);
+	var _PlaygroundContainer = __webpack_require__(224);
 
 	var _PlaygroundContainer2 = _interopRequireDefault(_PlaygroundContainer);
 
-	var _reducers = __webpack_require__(234);
+	var _reducers = __webpack_require__(228);
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
-	var _initialState = __webpack_require__(240);
+	var _initial = __webpack_require__(234);
 
-	var _initialState2 = _interopRequireDefault(_initialState);
+	var _initial2 = _interopRequireDefault(_initial);
 
-	var _events = __webpack_require__(246);
+	var _events = __webpack_require__(235);
 
 	var _events2 = _interopRequireDefault(_events);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	//const logger = createLogger();
-	var store = (0, _redux.createStore)(_reducers2.default, _initialState2.default, (0, _redux.applyMiddleware)(_reduxThunk2.default, _reduxPromise2.default));
+	var store = (0, _redux.createStore)(_reducers2.default, _initial2.default, (0, _redux.applyMiddleware)(_reduxThunk2.default, _reduxPromise2.default));
+	//import createLogger from 'redux-logger';
+
 
 	(0, _events2.default)(store.dispatch);
 
@@ -23366,877 +23364,18 @@
 
 	'use strict';
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _core = __webpack_require__(208);
-
-	var _helpers = __webpack_require__(209);
-
-	var _defaults = __webpack_require__(212);
-
-	var _defaults2 = _interopRequireDefault(_defaults);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	/**
-	 * Creates logger with following options
-	 *
-	 * @namespace
-	 * @param {object} options - options for logger
-	 * @param {string | function | object} options.level - console[level]
-	 * @param {boolean} options.duration - print duration of each action?
-	 * @param {boolean} options.timestamp - print timestamp with each action?
-	 * @param {object} options.colors - custom colors
-	 * @param {object} options.logger - implementation of the `console` API
-	 * @param {boolean} options.logErrors - should errors in action execution be caught, logged, and re-thrown?
-	 * @param {boolean} options.collapsed - is group collapsed?
-	 * @param {boolean} options.predicate - condition which resolves logger behavior
-	 * @param {function} options.stateTransformer - transform state before print
-	 * @param {function} options.actionTransformer - transform action before print
-	 * @param {function} options.errorTransformer - transform error before print
-	 *
-	 * @returns {function} logger middleware
-	 */
-	function createLogger() {
-	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-	  var loggerOptions = _extends({}, _defaults2.default, options);
-
-	  var logger = loggerOptions.logger;
-	  var transformer = loggerOptions.transformer;
-	  var stateTransformer = loggerOptions.stateTransformer;
-	  var errorTransformer = loggerOptions.errorTransformer;
-	  var predicate = loggerOptions.predicate;
-	  var logErrors = loggerOptions.logErrors;
-	  var diffPredicate = loggerOptions.diffPredicate;
-
-	  // Return if 'console' object is not defined
-
-	  if (typeof logger === 'undefined') {
-	    return function () {
-	      return function (next) {
-	        return function (action) {
-	          return next(action);
-	        };
-	      };
-	    };
-	  }
-
-	  if (transformer) {
-	    console.error('Option \'transformer\' is deprecated, use \'stateTransformer\' instead!'); // eslint-disable-line no-console
-	  }
-
-	  var logBuffer = [];
-
-	  return function (_ref) {
-	    var getState = _ref.getState;
-	    return function (next) {
-	      return function (action) {
-	        // Exit early if predicate function returns 'false'
-	        if (typeof predicate === 'function' && !predicate(getState, action)) {
-	          return next(action);
-	        }
-
-	        var logEntry = {};
-	        logBuffer.push(logEntry);
-
-	        logEntry.started = _helpers.timer.now();
-	        logEntry.startedTime = new Date();
-	        logEntry.prevState = stateTransformer(getState());
-	        logEntry.action = action;
-
-	        var returnedValue = undefined;
-	        if (logErrors) {
-	          try {
-	            returnedValue = next(action);
-	          } catch (e) {
-	            logEntry.error = errorTransformer(e);
-	          }
-	        } else {
-	          returnedValue = next(action);
-	        }
-
-	        logEntry.took = _helpers.timer.now() - logEntry.started;
-	        logEntry.nextState = stateTransformer(getState());
-
-	        var diff = loggerOptions.diff && typeof diffPredicate === 'function' ? diffPredicate(getState, action) : loggerOptions.diff;
-
-	        (0, _core.printBuffer)(logBuffer, _extends({}, loggerOptions, { diff: diff }));
-	        logBuffer.length = 0;
-
-	        if (logEntry.error) throw logEntry.error;
-	        return returnedValue;
-	      };
-	    };
-	  };
-	}
-
-	exports.default = createLogger;
-	module.exports = exports['default'];
-
-/***/ },
-/* 208 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.printBuffer = printBuffer;
-
-	var _helpers = __webpack_require__(209);
-
-	var _diff = __webpack_require__(210);
-
-	var _diff2 = _interopRequireDefault(_diff);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
-	/**
-	 * Get log level string based on supplied params
-	 *
-	 * @param {string | function | object} level - console[level]
-	 * @param {object} action - selected action
-	 * @param {array} payload - selected payload
-	 * @param {string} type - log entry type
-	 *
-	 * @returns {string} level
-	 */
-	function getLogLevel(level, action, payload, type) {
-	  switch (typeof level === 'undefined' ? 'undefined' : _typeof(level)) {
-	    case 'object':
-	      return typeof level[type] === 'function' ? level[type].apply(level, _toConsumableArray(payload)) : level[type];
-	    case 'function':
-	      return level(action);
-	    default:
-	      return level;
-	  }
-	}
-
-	function defaultTitleFormatter(options) {
-	  var timestamp = options.timestamp;
-	  var duration = options.duration;
-
-	  return function (action, time, took) {
-	    var parts = ['action'];
-	    if (timestamp) {
-	      parts.push('@ ' + time);
-	    }
-	    parts.push(action.type);
-	    if (duration) {
-	      parts.push('(in ' + took.toFixed(2) + ' ms)');
-	    }
-	    return parts.join(' ');
-	  };
-	}
-
-	function printBuffer(buffer, options) {
-	  var logger = options.logger;
-	  var actionTransformer = options.actionTransformer;
-	  var _options$titleFormatt = options.titleFormatter;
-	  var titleFormatter = _options$titleFormatt === undefined ? defaultTitleFormatter(options) : _options$titleFormatt;
-	  var collapsed = options.collapsed;
-	  var colors = options.colors;
-	  var level = options.level;
-	  var diff = options.diff;
-
-	  buffer.forEach(function (logEntry, key) {
-	    var started = logEntry.started;
-	    var startedTime = logEntry.startedTime;
-	    var action = logEntry.action;
-	    var prevState = logEntry.prevState;
-	    var error = logEntry.error;
-	    var took = logEntry.took;
-	    var nextState = logEntry.nextState;
-
-	    var nextEntry = buffer[key + 1];
-
-	    if (nextEntry) {
-	      nextState = nextEntry.prevState;
-	      took = nextEntry.started - started;
-	    }
-
-	    // Message
-	    var formattedAction = actionTransformer(action);
-	    var isCollapsed = typeof collapsed === 'function' ? collapsed(function () {
-	      return nextState;
-	    }, action) : collapsed;
-
-	    var formattedTime = (0, _helpers.formatTime)(startedTime);
-	    var titleCSS = colors.title ? 'color: ' + colors.title(formattedAction) + ';' : null;
-	    var title = titleFormatter(formattedAction, formattedTime, took);
-
-	    // Render
-	    try {
-	      if (isCollapsed) {
-	        if (colors.title) logger.groupCollapsed('%c ' + title, titleCSS);else logger.groupCollapsed(title);
-	      } else {
-	        if (colors.title) logger.group('%c ' + title, titleCSS);else logger.group(title);
-	      }
-	    } catch (e) {
-	      logger.log(title);
-	    }
-
-	    var prevStateLevel = getLogLevel(level, formattedAction, [prevState], 'prevState');
-	    var actionLevel = getLogLevel(level, formattedAction, [formattedAction], 'action');
-	    var errorLevel = getLogLevel(level, formattedAction, [error, prevState], 'error');
-	    var nextStateLevel = getLogLevel(level, formattedAction, [nextState], 'nextState');
-
-	    if (prevStateLevel) {
-	      if (colors.prevState) logger[prevStateLevel]('%c prev state', 'color: ' + colors.prevState(prevState) + '; font-weight: bold', prevState);else logger[prevStateLevel]('prev state', prevState);
-	    }
-
-	    if (actionLevel) {
-	      if (colors.action) logger[actionLevel]('%c action', 'color: ' + colors.action(formattedAction) + '; font-weight: bold', formattedAction);else logger[actionLevel]('action', formattedAction);
-	    }
-
-	    if (error && errorLevel) {
-	      if (colors.error) logger[errorLevel]('%c error', 'color: ' + colors.error(error, prevState) + '; font-weight: bold', error);else logger[errorLevel]('error', error);
-	    }
-
-	    if (nextStateLevel) {
-	      if (colors.nextState) logger[nextStateLevel]('%c next state', 'color: ' + colors.nextState(nextState) + '; font-weight: bold', nextState);else logger[nextStateLevel]('next state', nextState);
-	    }
-
-	    if (diff) {
-	      (0, _diff2.default)(prevState, nextState, logger, isCollapsed);
-	    }
-
-	    try {
-	      logger.groupEnd();
-	    } catch (e) {
-	      logger.log('—— log end ——');
-	    }
-	  });
-	}
-
-/***/ },
-/* 209 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var repeat = exports.repeat = function repeat(str, times) {
-	  return new Array(times + 1).join(str);
-	};
-
-	var pad = exports.pad = function pad(num, maxLength) {
-	  return repeat("0", maxLength - num.toString().length) + num;
-	};
-
-	var formatTime = exports.formatTime = function formatTime(time) {
-	  return pad(time.getHours(), 2) + ":" + pad(time.getMinutes(), 2) + ":" + pad(time.getSeconds(), 2) + "." + pad(time.getMilliseconds(), 3);
-	};
-
-	// Use performance API if it's available in order to get better precision
-	var timer = exports.timer = typeof performance !== "undefined" && performance !== null && typeof performance.now === "function" ? performance : Date;
-
-/***/ },
-/* 210 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = diffLogger;
-
-	var _deepDiff = __webpack_require__(211);
-
-	var _deepDiff2 = _interopRequireDefault(_deepDiff);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	// https://github.com/flitbit/diff#differences
-	var dictionary = {
-	  'E': {
-	    color: '#2196F3',
-	    text: 'CHANGED:'
-	  },
-	  'N': {
-	    color: '#4CAF50',
-	    text: 'ADDED:'
-	  },
-	  'D': {
-	    color: '#F44336',
-	    text: 'DELETED:'
-	  },
-	  'A': {
-	    color: '#2196F3',
-	    text: 'ARRAY:'
-	  }
-	};
-
-	function style(kind) {
-	  return 'color: ' + dictionary[kind].color + '; font-weight: bold';
-	}
-
-	function render(diff) {
-	  var kind = diff.kind;
-	  var path = diff.path;
-	  var lhs = diff.lhs;
-	  var rhs = diff.rhs;
-	  var index = diff.index;
-	  var item = diff.item;
-
-	  switch (kind) {
-	    case 'E':
-	      return path.join('.') + ' ' + lhs + ' → ' + rhs;
-	    case 'N':
-	      return path.join('.') + ' ' + rhs;
-	    case 'D':
-	      return '' + path.join('.');
-	    case 'A':
-	      return [path.join('.') + '[' + index + ']', item];
-	    default:
-	      return null;
-	  }
-	}
-
-	function diffLogger(prevState, newState, logger, isCollapsed) {
-	  var diff = (0, _deepDiff2.default)(prevState, newState);
-
-	  try {
-	    if (isCollapsed) {
-	      logger.groupCollapsed('diff');
-	    } else {
-	      logger.group('diff');
-	    }
-	  } catch (e) {
-	    logger.log('diff');
-	  }
-
-	  if (diff) {
-	    diff.forEach(function (elem) {
-	      var kind = elem.kind;
-
-	      var output = render(elem);
-
-	      logger.log('%c ' + dictionary[kind].text, style(kind), output);
-	    });
-	  } else {
-	    logger.log('—— no diff ——');
-	  }
-
-	  try {
-	    logger.groupEnd();
-	  } catch (e) {
-	    logger.log('—— diff end —— ');
-	  }
-	}
-	module.exports = exports['default'];
-
-/***/ },
-/* 211 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*!
-	 * deep-diff.
-	 * Licensed under the MIT License.
-	 */
-	;(function(root, factory) {
-	  'use strict';
-	  if (true) {
-	    // AMD. Register as an anonymous module.
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-	      return factory();
-	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof exports === 'object') {
-	    // Node. Does not work with strict CommonJS, but
-	    // only CommonJS-like environments that support module.exports,
-	    // like Node.
-	    module.exports = factory();
-	  } else {
-	    // Browser globals (root is window)
-	    root.DeepDiff = factory();
-	  }
-	}(this, function(undefined) {
-	  'use strict';
-
-	  var $scope, conflict, conflictResolution = [];
-	  if (typeof global === 'object' && global) {
-	    $scope = global;
-	  } else if (typeof window !== 'undefined') {
-	    $scope = window;
-	  } else {
-	    $scope = {};
-	  }
-	  conflict = $scope.DeepDiff;
-	  if (conflict) {
-	    conflictResolution.push(
-	      function() {
-	        if ('undefined' !== typeof conflict && $scope.DeepDiff === accumulateDiff) {
-	          $scope.DeepDiff = conflict;
-	          conflict = undefined;
-	        }
-	      });
-	  }
-
-	  // nodejs compatible on server side and in the browser.
-	  function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  }
-
-	  function Diff(kind, path) {
-	    Object.defineProperty(this, 'kind', {
-	      value: kind,
-	      enumerable: true
-	    });
-	    if (path && path.length) {
-	      Object.defineProperty(this, 'path', {
-	        value: path,
-	        enumerable: true
-	      });
-	    }
-	  }
-
-	  function DiffEdit(path, origin, value) {
-	    DiffEdit.super_.call(this, 'E', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: origin,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffEdit, Diff);
-
-	  function DiffNew(path, value) {
-	    DiffNew.super_.call(this, 'N', path);
-	    Object.defineProperty(this, 'rhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffNew, Diff);
-
-	  function DiffDeleted(path, value) {
-	    DiffDeleted.super_.call(this, 'D', path);
-	    Object.defineProperty(this, 'lhs', {
-	      value: value,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffDeleted, Diff);
-
-	  function DiffArray(path, index, item) {
-	    DiffArray.super_.call(this, 'A', path);
-	    Object.defineProperty(this, 'index', {
-	      value: index,
-	      enumerable: true
-	    });
-	    Object.defineProperty(this, 'item', {
-	      value: item,
-	      enumerable: true
-	    });
-	  }
-	  inherits(DiffArray, Diff);
-
-	  function arrayRemove(arr, from, to) {
-	    var rest = arr.slice((to || from) + 1 || arr.length);
-	    arr.length = from < 0 ? arr.length + from : from;
-	    arr.push.apply(arr, rest);
-	    return arr;
-	  }
-
-	  function realTypeOf(subject) {
-	    var type = typeof subject;
-	    if (type !== 'object') {
-	      return type;
-	    }
-
-	    if (subject === Math) {
-	      return 'math';
-	    } else if (subject === null) {
-	      return 'null';
-	    } else if (Array.isArray(subject)) {
-	      return 'array';
-	    } else if (Object.prototype.toString.call(subject) === '[object Date]') {
-	      return 'date';
-	    } else if (typeof subject.toString !== 'undefined' && /^\/.*\//.test(subject.toString())) {
-	      return 'regexp';
-	    }
-	    return 'object';
-	  }
-
-	  function deepDiff(lhs, rhs, changes, prefilter, path, key, stack) {
-	    path = path || [];
-	    var currentPath = path.slice(0);
-	    if (typeof key !== 'undefined') {
-	      if (prefilter) {
-	        if (typeof(prefilter) === 'function' && prefilter(currentPath, key)) { return; }
-	        else if (typeof(prefilter) === 'object') {
-	          if (prefilter.prefilter && prefilter.prefilter(currentPath, key)) { return; }
-	          if (prefilter.normalize) {
-	            var alt = prefilter.normalize(currentPath, key, lhs, rhs);
-	            if (alt) {
-	              lhs = alt[0];
-	              rhs = alt[1];
-	            }
-	          }
-	        }
-	      }
-	      currentPath.push(key);
-	    }
-
-	    // Use string comparison for regexes
-	    if (realTypeOf(lhs) === 'regexp' && realTypeOf(rhs) === 'regexp') {
-	      lhs = lhs.toString();
-	      rhs = rhs.toString();
-	    }
-
-	    var ltype = typeof lhs;
-	    var rtype = typeof rhs;
-	    if (ltype === 'undefined') {
-	      if (rtype !== 'undefined') {
-	        changes(new DiffNew(currentPath, rhs));
-	      }
-	    } else if (rtype === 'undefined') {
-	      changes(new DiffDeleted(currentPath, lhs));
-	    } else if (realTypeOf(lhs) !== realTypeOf(rhs)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (Object.prototype.toString.call(lhs) === '[object Date]' && Object.prototype.toString.call(rhs) === '[object Date]' && ((lhs - rhs) !== 0)) {
-	      changes(new DiffEdit(currentPath, lhs, rhs));
-	    } else if (ltype === 'object' && lhs !== null && rhs !== null) {
-	      stack = stack || [];
-	      if (stack.indexOf(lhs) < 0) {
-	        stack.push(lhs);
-	        if (Array.isArray(lhs)) {
-	          var i, len = lhs.length;
-	          for (i = 0; i < lhs.length; i++) {
-	            if (i >= rhs.length) {
-	              changes(new DiffArray(currentPath, i, new DiffDeleted(undefined, lhs[i])));
-	            } else {
-	              deepDiff(lhs[i], rhs[i], changes, prefilter, currentPath, i, stack);
-	            }
-	          }
-	          while (i < rhs.length) {
-	            changes(new DiffArray(currentPath, i, new DiffNew(undefined, rhs[i++])));
-	          }
-	        } else {
-	          var akeys = Object.keys(lhs);
-	          var pkeys = Object.keys(rhs);
-	          akeys.forEach(function(k, i) {
-	            var other = pkeys.indexOf(k);
-	            if (other >= 0) {
-	              deepDiff(lhs[k], rhs[k], changes, prefilter, currentPath, k, stack);
-	              pkeys = arrayRemove(pkeys, other);
-	            } else {
-	              deepDiff(lhs[k], undefined, changes, prefilter, currentPath, k, stack);
-	            }
-	          });
-	          pkeys.forEach(function(k) {
-	            deepDiff(undefined, rhs[k], changes, prefilter, currentPath, k, stack);
-	          });
-	        }
-	        stack.length = stack.length - 1;
-	      }
-	    } else if (lhs !== rhs) {
-	      if (!(ltype === 'number' && isNaN(lhs) && isNaN(rhs))) {
-	        changes(new DiffEdit(currentPath, lhs, rhs));
-	      }
-	    }
-	  }
-
-	  function accumulateDiff(lhs, rhs, prefilter, accum) {
-	    accum = accum || [];
-	    deepDiff(lhs, rhs,
-	      function(diff) {
-	        if (diff) {
-	          accum.push(diff);
-	        }
-	      },
-	      prefilter);
-	    return (accum.length) ? accum : undefined;
-	  }
-
-	  function applyArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    } else {
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr = arrayRemove(arr, index);
-	          break;
-	        case 'E':
-	        case 'N':
-	          arr[index] = change.rhs;
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function applyChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i = -1,
-	          last = change.path ? change.path.length - 1 : 0;
-	      while (++i < last) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = (typeof change.path[i] === 'number') ? [] : {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          applyArrayChange(change.path ? it[change.path[i]] : it, change.index, change.item);
-	          break;
-	        case 'D':
-	          delete it[change.path[i]];
-	          break;
-	        case 'E':
-	        case 'N':
-	          it[change.path[i]] = change.rhs;
-	          break;
-	      }
-	    }
-	  }
-
-	  function revertArrayChange(arr, index, change) {
-	    if (change.path && change.path.length) {
-	      // the structure of the object at the index has changed...
-	      var it = arr[index],
-	          i, u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    } else {
-	      // the array item is different...
-	      switch (change.kind) {
-	        case 'A':
-	          revertArrayChange(arr[index], change.index, change.item);
-	          break;
-	        case 'D':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'E':
-	          arr[index] = change.lhs;
-	          break;
-	        case 'N':
-	          arr = arrayRemove(arr, index);
-	          break;
-	      }
-	    }
-	    return arr;
-	  }
-
-	  function revertChange(target, source, change) {
-	    if (target && source && change && change.kind) {
-	      var it = target,
-	          i, u;
-	      u = change.path.length - 1;
-	      for (i = 0; i < u; i++) {
-	        if (typeof it[change.path[i]] === 'undefined') {
-	          it[change.path[i]] = {};
-	        }
-	        it = it[change.path[i]];
-	      }
-	      switch (change.kind) {
-	        case 'A':
-	          // Array was modified...
-	          // it will be an array...
-	          revertArrayChange(it[change.path[i]], change.index, change.item);
-	          break;
-	        case 'D':
-	          // Item was deleted...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'E':
-	          // Item was edited...
-	          it[change.path[i]] = change.lhs;
-	          break;
-	        case 'N':
-	          // Item is new...
-	          delete it[change.path[i]];
-	          break;
-	      }
-	    }
-	  }
-
-	  function applyDiff(target, source, filter) {
-	    if (target && source) {
-	      var onChange = function(change) {
-	        if (!filter || filter(target, source, change)) {
-	          applyChange(target, source, change);
-	        }
-	      };
-	      deepDiff(target, source, onChange);
-	    }
-	  }
-
-	  Object.defineProperties(accumulateDiff, {
-
-	    diff: {
-	      value: accumulateDiff,
-	      enumerable: true
-	    },
-	    observableDiff: {
-	      value: deepDiff,
-	      enumerable: true
-	    },
-	    applyDiff: {
-	      value: applyDiff,
-	      enumerable: true
-	    },
-	    applyChange: {
-	      value: applyChange,
-	      enumerable: true
-	    },
-	    revertChange: {
-	      value: revertChange,
-	      enumerable: true
-	    },
-	    isConflict: {
-	      value: function() {
-	        return 'undefined' !== typeof conflict;
-	      },
-	      enumerable: true
-	    },
-	    noConflict: {
-	      value: function() {
-	        if (conflictResolution) {
-	          conflictResolution.forEach(function(it) {
-	            it();
-	          });
-	          conflictResolution = null;
-	        }
-	        return accumulateDiff;
-	      },
-	      enumerable: true
-	    }
-	  });
-
-	  return accumulateDiff;
-	}));
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 212 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = {
-	  level: "log",
-	  logger: console,
-	  logErrors: true,
-	  collapsed: undefined,
-	  predicate: undefined,
-	  duration: false,
-	  timestamp: true,
-	  stateTransformer: function stateTransformer(state) {
-	    return state;
-	  },
-	  actionTransformer: function actionTransformer(action) {
-	    return action;
-	  },
-	  errorTransformer: function errorTransformer(error) {
-	    return error;
-	  },
-	  colors: {
-	    title: function title() {
-	      return "inherit";
-	    },
-	    prevState: function prevState() {
-	      return "#9E9E9E";
-	    },
-	    action: function action() {
-	      return "#03A9F4";
-	    },
-	    nextState: function nextState() {
-	      return "#4CAF50";
-	    },
-	    error: function error() {
-	      return "#F20404";
-	    }
-	  },
-	  diff: false,
-	  diffPredicate: undefined,
-
-	  // Deprecated options
-	  transformer: undefined
-	};
-	module.exports = exports['default'];
-
-/***/ },
-/* 213 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
 	exports.__esModule = true;
 	exports.connect = exports.connectAdvanced = exports.Provider = undefined;
 
-	var _Provider = __webpack_require__(214);
+	var _Provider = __webpack_require__(208);
 
 	var _Provider2 = _interopRequireDefault(_Provider);
 
-	var _connectAdvanced = __webpack_require__(217);
+	var _connectAdvanced = __webpack_require__(211);
 
 	var _connectAdvanced2 = _interopRequireDefault(_connectAdvanced);
 
-	var _connect = __webpack_require__(221);
+	var _connect = __webpack_require__(215);
 
 	var _connect2 = _interopRequireDefault(_connect);
 
@@ -24247,7 +23386,7 @@
 	exports.connect = _connect2.default;
 
 /***/ },
-/* 214 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24257,11 +23396,11 @@
 
 	var _react = __webpack_require__(1);
 
-	var _storeShape = __webpack_require__(215);
+	var _storeShape = __webpack_require__(209);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
-	var _warning = __webpack_require__(216);
+	var _warning = __webpack_require__(210);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -24332,7 +23471,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 215 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24348,7 +23487,7 @@
 	});
 
 /***/ },
-/* 216 */
+/* 210 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -24378,7 +23517,7 @@
 	}
 
 /***/ },
-/* 217 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24389,21 +23528,21 @@
 
 	exports.default = connectAdvanced;
 
-	var _hoistNonReactStatics = __webpack_require__(218);
+	var _hoistNonReactStatics = __webpack_require__(212);
 
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 
-	var _invariant = __webpack_require__(219);
+	var _invariant = __webpack_require__(213);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
 	var _react = __webpack_require__(1);
 
-	var _Subscription = __webpack_require__(220);
+	var _Subscription = __webpack_require__(214);
 
 	var _Subscription2 = _interopRequireDefault(_Subscription);
 
-	var _storeShape = __webpack_require__(215);
+	var _storeShape = __webpack_require__(209);
 
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 
@@ -24660,7 +23799,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 218 */
+/* 212 */
 /***/ function(module, exports) {
 
 	/**
@@ -24716,7 +23855,7 @@
 
 
 /***/ },
-/* 219 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -24774,7 +23913,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 220 */
+/* 214 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -24872,7 +24011,7 @@
 	exports.default = Subscription;
 
 /***/ },
-/* 221 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24883,27 +24022,27 @@
 
 	exports.createConnect = createConnect;
 
-	var _connectAdvanced = __webpack_require__(217);
+	var _connectAdvanced = __webpack_require__(211);
 
 	var _connectAdvanced2 = _interopRequireDefault(_connectAdvanced);
 
-	var _shallowEqual = __webpack_require__(222);
+	var _shallowEqual = __webpack_require__(216);
 
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 
-	var _mapDispatchToProps = __webpack_require__(223);
+	var _mapDispatchToProps = __webpack_require__(217);
 
 	var _mapDispatchToProps2 = _interopRequireDefault(_mapDispatchToProps);
 
-	var _mapStateToProps = __webpack_require__(226);
+	var _mapStateToProps = __webpack_require__(220);
 
 	var _mapStateToProps2 = _interopRequireDefault(_mapStateToProps);
 
-	var _mergeProps = __webpack_require__(227);
+	var _mergeProps = __webpack_require__(221);
 
 	var _mergeProps2 = _interopRequireDefault(_mergeProps);
 
-	var _selectorFactory = __webpack_require__(228);
+	var _selectorFactory = __webpack_require__(222);
 
 	var _selectorFactory2 = _interopRequireDefault(_selectorFactory);
 
@@ -25005,7 +24144,7 @@
 	exports.default = createConnect();
 
 /***/ },
-/* 222 */
+/* 216 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -25033,7 +24172,7 @@
 	}
 
 /***/ },
-/* 223 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25045,7 +24184,7 @@
 
 	var _redux = __webpack_require__(178);
 
-	var _wrapMapToProps = __webpack_require__(224);
+	var _wrapMapToProps = __webpack_require__(218);
 
 	function whenMapDispatchToPropsIsFunction(mapDispatchToProps) {
 	  return typeof mapDispatchToProps === 'function' ? (0, _wrapMapToProps.wrapMapToPropsFunc)(mapDispatchToProps, 'mapDispatchToProps') : undefined;
@@ -25066,7 +24205,7 @@
 	exports.default = [whenMapDispatchToPropsIsFunction, whenMapDispatchToPropsIsMissing, whenMapDispatchToPropsIsObject];
 
 /***/ },
-/* 224 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -25076,7 +24215,7 @@
 	exports.getDependsOnOwnProps = getDependsOnOwnProps;
 	exports.wrapMapToPropsFunc = wrapMapToPropsFunc;
 
-	var _verifyPlainObject = __webpack_require__(225);
+	var _verifyPlainObject = __webpack_require__(219);
 
 	var _verifyPlainObject2 = _interopRequireDefault(_verifyPlainObject);
 
@@ -25148,7 +24287,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 225 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25160,7 +24299,7 @@
 
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-	var _warning = __webpack_require__(216);
+	var _warning = __webpack_require__(210);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -25173,7 +24312,7 @@
 	}
 
 /***/ },
-/* 226 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25182,7 +24321,7 @@
 	exports.whenMapStateToPropsIsFunction = whenMapStateToPropsIsFunction;
 	exports.whenMapStateToPropsIsMissing = whenMapStateToPropsIsMissing;
 
-	var _wrapMapToProps = __webpack_require__(224);
+	var _wrapMapToProps = __webpack_require__(218);
 
 	function whenMapStateToPropsIsFunction(mapStateToProps) {
 	  return typeof mapStateToProps === 'function' ? (0, _wrapMapToProps.wrapMapToPropsFunc)(mapStateToProps, 'mapStateToProps') : undefined;
@@ -25197,7 +24336,7 @@
 	exports.default = [whenMapStateToPropsIsFunction, whenMapStateToPropsIsMissing];
 
 /***/ },
-/* 227 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -25211,7 +24350,7 @@
 	exports.whenMergePropsIsFunction = whenMergePropsIsFunction;
 	exports.whenMergePropsIsOmitted = whenMergePropsIsOmitted;
 
-	var _verifyPlainObject = __webpack_require__(225);
+	var _verifyPlainObject = __webpack_require__(219);
 
 	var _verifyPlainObject2 = _interopRequireDefault(_verifyPlainObject);
 
@@ -25261,7 +24400,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 228 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -25271,7 +24410,7 @@
 	exports.pureFinalPropsSelectorFactory = pureFinalPropsSelectorFactory;
 	exports.default = finalPropsSelectorFactory;
 
-	var _verifySubselectors = __webpack_require__(229);
+	var _verifySubselectors = __webpack_require__(223);
 
 	var _verifySubselectors2 = _interopRequireDefault(_verifySubselectors);
 
@@ -25380,7 +24519,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 229 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25388,7 +24527,7 @@
 	exports.__esModule = true;
 	exports.default = verifySubselectors;
 
-	var _warning = __webpack_require__(216);
+	var _warning = __webpack_require__(210);
 
 	var _warning2 = _interopRequireDefault(_warning);
 
@@ -25411,7 +24550,7 @@
 	}
 
 /***/ },
-/* 230 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25420,9 +24559,9 @@
 	    value: true
 	});
 
-	var _reactRedux = __webpack_require__(213);
+	var _reactRedux = __webpack_require__(207);
 
-	var _Playground = __webpack_require__(231);
+	var _Playground = __webpack_require__(225);
 
 	var _Playground2 = _interopRequireDefault(_Playground);
 
@@ -25442,7 +24581,7 @@
 	exports.default = PlaygroundContainer;
 
 /***/ },
-/* 231 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25457,15 +24596,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Grid = __webpack_require__(232);
+	var _Grid = __webpack_require__(226);
 
 	var _Grid2 = _interopRequireDefault(_Grid);
 
-	var _Rounds = __webpack_require__(233);
+	var _Rounds = __webpack_require__(227);
 
 	var _Rounds2 = _interopRequireDefault(_Rounds);
 
-	var _reactRedux = __webpack_require__(213);
+	var _reactRedux = __webpack_require__(207);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25503,7 +24642,7 @@
 	                _react2.default.createElement(
 	                    'div',
 	                    { className: 'col' },
-	                    _react2.default.createElement(_Grid2.default, { playground: playground })
+	                    _react2.default.createElement(_Grid2.default, { playground: playground, percentage: rounds.current.percentage })
 	                )
 	            );
 	        }
@@ -25519,7 +24658,7 @@
 	exports.default = (0, _reactRedux.connect)()(Playground);
 
 /***/ },
-/* 232 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25534,7 +24673,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRedux = __webpack_require__(213);
+	var _reactRedux = __webpack_require__(207);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25554,16 +24693,19 @@
 
 	        _this.drawRow = function (rowIndex) {
 	            var result = [];
-
+	            var percentage = _this.props.percentage;
 	            for (var colIndex = 0; colIndex < _this.props.playground.size.y; colIndex++) {
 	                var objects = [];
+	                var color = _this.props.playground.grid[rowIndex][colIndex].color;
 	                if (_this.props.playground.grid[rowIndex][colIndex].objects.length > 0) {
-	                    _this.props.playground.grid[rowIndex][colIndex].objects.forEach(function (item) {
-	                        objects.push(item.draw(rowIndex + colIndex));
-	                    });
+	                    //                this.props.playground.grid[rowIndex][colIndex].objects.forEach(function (item) {
+	                    //                    objects.push(item.draw(percentage, rowIndex + colIndex));
+	                    //                });
+
+	                    color = _this.props.playground.grid[rowIndex][colIndex].objects[0].getColor();
 	                }
 	                var style = {
-	                    backgroundColor: _this.props.playground.grid[rowIndex][colIndex].color
+	                    backgroundColor: color
 	                };
 
 	                result.push(_react2.default.createElement(
@@ -25614,12 +24756,13 @@
 	}(_react.Component);
 
 	Grid.propTypes = {
-	    playground: _react.PropTypes.object.isRequired
+	    playground: _react.PropTypes.object.isRequired,
+	    percentage: _react2.default.PropTypes.number
 	};
 	exports.default = (0, _reactRedux.connect)()(Grid);
 
 /***/ },
-/* 233 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25634,7 +24777,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactRedux = __webpack_require__(213);
+	var _reactRedux = __webpack_require__(207);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25659,7 +24802,7 @@
 	            var rounds = this.props.rounds;
 
 
-	            return rounds.list[rounds.current].draw();
+	            return rounds.draw();
 	        }
 	    }]);
 
@@ -25672,7 +24815,7 @@
 	exports.default = (0, _reactRedux.connect)()(Rounds);
 
 /***/ },
-/* 234 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25683,19 +24826,19 @@
 
 	var _redux = __webpack_require__(178);
 
-	var _playground = __webpack_require__(235);
+	var _playground = __webpack_require__(229);
 
 	var _playground2 = _interopRequireDefault(_playground);
 
-	var _objects = __webpack_require__(237);
+	var _objects = __webpack_require__(231);
 
 	var _objects2 = _interopRequireDefault(_objects);
 
-	var _keyboard = __webpack_require__(238);
+	var _keyboard = __webpack_require__(232);
 
 	var _keyboard2 = _interopRequireDefault(_keyboard);
 
-	var _rounds = __webpack_require__(239);
+	var _rounds = __webpack_require__(233);
 
 	var _rounds2 = _interopRequireDefault(_rounds);
 
@@ -25711,7 +24854,7 @@
 	exports.default = reducers;
 
 /***/ },
-/* 235 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25722,7 +24865,7 @@
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _global = __webpack_require__(236);
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
@@ -25734,14 +24877,15 @@
 
 	    switch (action.type) {
 	        case global.ACTION_MOVE_OBJECT:
-	            if (global.isEqualPositions(action.position.prev, action.position.current)) {
+	            var position = action.object.position;
+	            if (!action.object.isMoved()) {
 	                return state;
 	            }
 	            var grid = Object.assign([], state.grid);
 
-	            grid[action.position.current.y][action.position.current.x].objects.push(grid[action.position.prev.y][action.position.prev.x].objects[0]);
-	            grid[action.position.prev.y][action.position.prev.x].color = '#000';
-	            grid[action.position.prev.y][action.position.prev.x].objects = [];
+	            grid[position.current.y][position.current.x].objects.push(grid[position.prev.y][position.prev.x].objects[0]);
+	            grid[position.prev.y][position.prev.x].color = action.object.getColor();
+	            grid[position.prev.y][position.prev.x].objects = [];
 
 	            return _extends({}, state, {
 	                grid: grid
@@ -25762,7 +24906,7 @@
 	exports.default = playground;
 
 /***/ },
-/* 236 */
+/* 230 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -25781,14 +24925,22 @@
 	        y: 35,
 	        x: 35
 	    },
-	    tick: 70
+	    tick: 50
 	};
 
-	var objectSize = exports.objectSize = 3;
+	var hp = exports.hp = 40;
+	var objectSize = exports.objectSize = 1;
 
 	var positionPrevNull = exports.positionPrevNull = {
 	    y: null,
 	    x: null
+	};
+
+	var directionNull = exports.directionNull = {
+	    up: false,
+	    right: false,
+	    down: false,
+	    left: false
 	};
 
 	var objects = exports.objects = {
@@ -25807,12 +24959,9 @@
 	                x: 0
 	            }
 	        },
-	        direction: {
-	            up: false,
-	            right: true,
-	            down: false,
-	            left: false
-	        }
+	        direction: Object.assign({}, directionNull, {
+	            right: true
+	        })
 	    },
 	    rocketLeft: {
 	        position: {
@@ -25821,12 +24970,9 @@
 	                x: playground.size.x - objectSize
 	            }
 	        },
-	        direction: {
-	            up: false,
-	            right: false,
-	            down: false,
+	        direction: Object.assign({}, directionNull, {
 	            left: true
-	        }
+	        })
 	    }
 	};
 
@@ -25838,7 +24984,7 @@
 
 	var ACTION_RENDER = exports.ACTION_RENDER = 'gRender';
 	var ACTION_SET_TIMER = exports.ACTION_SET_TIMER = 'gSetTimer';
-	var ACTION_NEXT_ROUND = exports.ACTION_NEXT_ROUND = 'gNextRound';
+	var ACTION_SET_ROUND = exports.ACTION_SET_ROUND = 'gNextRound';
 
 	// Global functions
 	function isEqualPositions(pos1, pos2) {
@@ -25846,7 +24992,7 @@
 	}
 
 /***/ },
-/* 237 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25855,15 +25001,11 @@
 	    value: true
 	});
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _global = __webpack_require__(236);
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var objects = function objects() {
 	    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -25872,10 +25014,13 @@
 	    switch (action.type) {
 	        case global.ACTION_MOVE:
 
-	            var object = state[action.object];
+	            var object = state[action.objectId];
 	            object.move(action.direction);
 
-	            return _extends({}, state, _defineProperty({}, action.object, object));
+	            var newState = Object.assign([], state);
+	            newState[action.objectId] = object;
+
+	            return newState;
 
 	        default:
 	            return state;
@@ -25885,7 +25030,7 @@
 	exports.default = objects;
 
 /***/ },
-/* 238 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25894,7 +25039,7 @@
 	    value: true
 	});
 
-	var _global = __webpack_require__(236);
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
@@ -25919,7 +25064,7 @@
 	exports.default = keyboard;
 
 /***/ },
-/* 239 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25930,7 +25075,7 @@
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _global = __webpack_require__(236);
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
@@ -25942,8 +25087,9 @@
 
 	    switch (action.type) {
 	        case global.ACTION_SET_TIMER:
-	            if (typeof state.list[state.current].timer != 'undefined') {
-	                var timer = state.list[state.current].timer;
+	            var current = state.current;
+	            if (typeof current.timer != 'undefined') {
+	                var timer = current.timer;
 
 	                timer.value = action.timer;
 	                if (timer.value == -1) {
@@ -25951,13 +25097,15 @@
 	                    timer.value = null;
 	                }
 
-	                state.list[state.current].timer = timer;
+	                current.timer = timer;
 	            }
+
+	            console.log('Timer: ' + timer.value);
 
 	            return _extends({}, state);
 
-	        case global.ACTION_NEXT_ROUND:
-	            state.current = action.round;
+	        case global.ACTION_SET_ROUND:
+	            state.current.id = action.round;
 
 	            return state;
 
@@ -25967,7 +25115,7 @@
 	};
 
 /***/ },
-/* 240 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25976,23 +25124,19 @@
 	    value: true
 	});
 
-	var _global = __webpack_require__(236);
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
-	var _playground = __webpack_require__(241);
+	var _playground = __webpack_require__(237);
 
 	var _playground2 = _interopRequireDefault(_playground);
 
-	var _player = __webpack_require__(242);
+	var _Spark = __webpack_require__(242);
 
-	var _player2 = _interopRequireDefault(_player);
+	var _Spark2 = _interopRequireDefault(_Spark);
 
-	var _rocket = __webpack_require__(243);
-
-	var _rocket2 = _interopRequireDefault(_rocket);
-
-	var _rounds = __webpack_require__(244);
+	var _rounds = __webpack_require__(240);
 
 	var _rounds2 = _interopRequireDefault(_rounds);
 
@@ -26005,53 +25149,14 @@
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	var keyboard = {
-	    direction: {
-	        up: false,
-	        right: false,
-	        down: false,
-	        left: false
-	    }
+	    direction: global.directionNull
 	};
 
-	var rocketRight = Object.assign({}, _rocket2.default, {
-	    position: {
-	        prev: global.positionPrevNull,
-	        current: global.objects.rocketRight.position.current
-	    },
-	    direction: global.objects.rocketRight.direction
+	var objects = [new _Spark2.default('player', global.hp * 2, global.objectSize, global.objects.player.position, global.directionNull), new _Spark2.default('rocket', global.hp, global.objectSize, global.objects.rocketLeft.position, global.objects.rocketLeft.direction), new _Spark2.default('rocket', global.hp, global.objectSize, global.objects.rocketRight.position, global.objects.rocketRight.direction)];
+
+	objects.forEach(function (item) {
+	    _playground2.default.updateObjectOnGrid(item);
 	});
-	rocketRight.draw = function () {
-	    return _react2.default.createElement(
-	        'div',
-	        { className: 'object rocket-right' },
-	        _react2.default.createElement('i', { className: 'fa fa-rocket size-' + _rocket2.default.size, 'aria-hidden': 'true' })
-	    );
-	};
-
-	var rocketLeft = Object.assign({}, _rocket2.default, {
-	    position: {
-	        prev: global.positionPrevNull,
-	        current: global.objects.rocketLeft.position.current
-	    },
-	    direction: global.objects.rocketLeft.direction
-	});
-	rocketLeft.draw = function () {
-	    return _react2.default.createElement(
-	        'div',
-	        { className: 'object rocket-left' },
-	        _react2.default.createElement('i', { className: 'fa fa-rocket size-' + _rocket2.default.size, 'aria-hidden': 'true' })
-	    );
-	};
-
-	var objects = {
-	    player: _player2.default,
-	    rocketRight: rocketRight,
-	    rocketLeft: rocketLeft
-	};
-
-	for (var object in objects) {
-	    _playground2.default.updateObjectOnGrid(objects[object]);
-	}
 
 	var initialState = {
 	    playground: _playground2.default,
@@ -26063,7 +25168,7 @@
 	exports.default = initialState;
 
 /***/ },
-/* 241 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26072,7 +25177,173 @@
 	    value: true
 	});
 
-	var _global = __webpack_require__(236);
+	var _actions = __webpack_require__(236);
+
+	var actions = _interopRequireWildcard(_actions);
+
+	var _global = __webpack_require__(230);
+
+	var global = _interopRequireWildcard(_global);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var initGlobalEvents = function initGlobalEvents(dispatch) {
+	    document.addEventListener("keydown", function (target) {
+	        dispatch(actions.keyDown(getDirection(target.keyCode)));
+	    }, false);
+
+	    document.addEventListener("keyup", function (target) {
+	        dispatch(actions.keyUp(getDirection(target.keyCode)));
+	    }, false);
+
+	    setInterval(function () {
+	        dispatch(actions.tick());
+	    }, global.playground.tick);
+
+	    dispatch(actions.startRound(1));
+	};
+
+	function getDirection(code) {
+	    switch (code) {
+	        case 38:
+	            return 'up';
+	        case 39:
+	            return 'right';
+	        case 40:
+	            return 'down';
+	        case 37:
+	            return 'left';
+	    }
+	}
+
+	exports.default = initGlobalEvents;
+
+/***/ },
+/* 236 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.keyUp = exports.keyDown = exports.moveObject = exports.move = exports.render = undefined;
+	exports.tick = tick;
+	exports.changeTimer = changeTimer;
+	exports.startRound = startRound;
+
+	var _global = __webpack_require__(230);
+
+	var global = _interopRequireWildcard(_global);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function tick() {
+	    return function (dispatch, getState) {
+	        switch (getState().rounds.current.id) {
+	            case 0:
+	                break;
+	            case 1:
+	                dispatch(render(false));
+	                getState().objects.forEach(function (item, objectId) {
+	                    switch (item.type) {
+	                        case 'rocket':
+	                            item.hp.current--;
+	                            dispatch(move(objectId, item.direction));
+	                            dispatch(moveObject(getState().objects[objectId]));
+	                    }
+	                });
+	                dispatch(render(true));
+	                break;
+	            case 2:
+	                dispatch(render(false));
+	                getState().objects.forEach(function (item, objectId) {
+	                    switch (item.type) {
+	                        case 'player':
+	                            dispatch(move(objectId, getState().keyboard.direction));
+	                            if (getState().objects[objectId].isMoved()) {
+	                                getState().objects[objectId].hp.current--;
+	                            }
+	                            dispatch(moveObject(getState().objects[objectId]));
+	                    }
+	                });
+	                dispatch(render(true));
+	                break;
+	        }
+	    };
+	}
+
+	var render = exports.render = function render(shouldRender) {
+	    return {
+	        type: global.ACTION_RENDER,
+	        shouldRender: shouldRender
+	    };
+	};
+
+	var move = exports.move = function move(objectId, direction) {
+	    return {
+	        type: global.ACTION_MOVE,
+	        direction: direction,
+	        objectId: objectId
+	    };
+	};
+
+	var moveObject = exports.moveObject = function moveObject(object) {
+	    return {
+	        type: global.ACTION_MOVE_OBJECT,
+	        object: object
+	    };
+	};
+
+	var keyDown = exports.keyDown = function keyDown(direction) {
+	    return {
+	        type: global.ACTION_KEY_DOWN,
+	        direction: direction
+	    };
+	};
+
+	var keyUp = exports.keyUp = function keyUp(direction) {
+	    return {
+	        type: global.ACTION_KEY_UP,
+	        direction: direction
+	    };
+	};
+
+	function changeTimer(timer) {
+	    return function (dispatch, getState) {
+	        dispatch({
+	            type: global.ACTION_SET_TIMER,
+	            timer: timer
+	        });
+	        if (timer == -1) {
+	            dispatch(startRound(getState().rounds.current.id + 1));
+	        }
+	    };
+	}
+
+	function startRound(round) {
+	    return function (dispatch, getState) {
+	        if (typeof getState().rounds.list[round] != 'undefined') {
+	            dispatch({
+	                type: global.ACTION_SET_ROUND,
+	                round: round
+	            });
+	            getState().rounds.start(dispatch);
+	        }
+	    };
+	}
+
+/***/ },
+/* 237 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
@@ -26116,7 +25387,9 @@
 	exports.default = playground;
 
 /***/ },
-/* 242 */
+/* 238 */,
+/* 239 */,
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26125,143 +25398,13 @@
 	    value: true
 	});
 
-	var _global = __webpack_require__(236);
-
-	var global = _interopRequireWildcard(_global);
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var player = {
-	    position: {
-	        prev: global.positionPrevNull,
-	        current: global.objects.player.position.current
-	    },
-	    size: global.objectSize,
-	    draw: function draw(id) {
-	        return _react2.default.createElement(
-	            'div',
-	            { className: 'object', key: "object" + id },
-	            _react2.default.createElement('i', { className: 'fa fa-github-alt size-' + this.size, 'aria-hidden': 'true' })
-	        );
-	    },
-	    changePosition: function changePosition(yOffset, xOffset) {
-	        this.position.current.y += yOffset;
-	        this.position.current.x += xOffset;
-	    },
-	    move: function move(direction) {
-	        this.position.prev = Object.assign({}, this.position.current);
-	        for (var line in direction) {
-	            if (!direction[line]) {
-	                continue;
-	            }
-	            switch (line) {
-	                case 'up':
-	                    if (this.position.current.y > 0) {
-	                        this.changePosition(-1, 0);
-	                    }
-	                    break;
-	                case 'right':
-	                    if (this.position.current.x < global.playground.size.x - global.objectSize) {
-	                        this.changePosition(0, 1);
-	                    }
-	                    break;
-	                case 'down':
-	                    if (this.position.current.y < global.playground.size.y - global.objectSize) {
-	                        this.changePosition(1, 0);
-	                    }
-	                    break;
-	                case 'left':
-	                    if (this.position.current.x > 0) {
-	                        this.changePosition(0, -1);
-	                    }
-	                    break;
-	            }
-	        }
-	    }
-	};
-
-	exports.default = player;
-
-/***/ },
-/* 243 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _global = __webpack_require__(236);
-
-	var global = _interopRequireWildcard(_global);
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var rocket = {
-	    size: global.objectSize,
-	    changePosition: function changePosition(yOffset, xOffset) {
-	        this.position.current.y += yOffset;
-	        this.position.current.x += xOffset;
-	    },
-	    move: function move(direction) {
-	        this.position.prev = Object.assign({}, this.position.current);
-	        for (var line in direction) {
-	            if (!direction[line]) {
-	                continue;
-	            }
-	            switch (line) {
-	                case 'up':
-	                    if (this.position.current.y > 0) {
-	                        this.changePosition(-1, 0);
-	                    }
-	                    break;
-	                case 'right':
-	                    if (this.position.current.x < global.playground.size.x - global.objectSize) {
-	                        this.changePosition(0, 1);
-	                    }
-	                    break;
-	                case 'down':
-	                    if (this.position.current.y < global.playground.size.y - global.objectSize) {
-	                        this.changePosition(1, 0);
-	                    }
-	                    break;
-	                case 'left':
-	                    if (this.position.current.x > 0) {
-	                        this.changePosition(0, -1);
-	                    }
-	                    break;
-	            }
-	        }
-	    }
-	};
-	exports.default = rocket;
-
-/***/ },
-/* 244 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _actions = __webpack_require__(245);
+	var _actions = __webpack_require__(236);
 
 	var actions = _interopRequireWildcard(_actions);
+
+	var _global = __webpack_require__(230);
+
+	var globals = _interopRequireWildcard(_global);
 
 	var _react = __webpack_require__(1);
 
@@ -26272,312 +25415,162 @@
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	exports.default = {
-	    current: 0,
+	    current: {
+	        id: null,
+	        timer: {
+	            value: null,
+	            interval: null
+	        }
+	    },
 	    list: [{
-	        timer: {
-	            value: null,
-	            interval: null
-	        },
-	        text: "Get ready to View round",
-	        duration: 2000,
-	        start: function start(dispatch) {
-	            var value = Math.floor(this.duration / 1000);
+	        text: "Prepare to see the future!",
+	        duration: 3000
+	    }, {
+	        text: "Future is here",
+	        duration: 3000
+	    }, {
+	        text: "Go! Go! Go!",
+	        duration: 5000
+	    }],
+	    start: function start(dispatch) {
+	        var data = this.list[this.current.id];
+
+	        var value = Math.floor(data.duration / 1000);
+	        dispatch(actions.changeTimer(value));
+	        this.current.timer.interval = setInterval(function () {
+	            value--;
 	            dispatch(actions.changeTimer(value));
-	            this.timer.interval = setInterval(function () {
-	                value--;
-	                dispatch(actions.changeTimer(value));
-	            }, 1000);
-	        },
-	        draw: function draw() {
-	            return _react2.default.createElement(
+	        }, 1000);
+	    },
+	    draw: function draw() {
+	        var data = this.list[this.current.id];
+
+	        return _react2.default.createElement(
+	            'div',
+	            null,
+	            _react2.default.createElement(
 	                'div',
-	                null,
+	                { className: 'row' },
 	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h3',
-	                        null,
-	                        this.text
-	                    )
-	                ),
-	                this.timer ? _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h2',
-	                        null,
-	                        this.timer.value && this.timer.value.toString()
-	                    )
-	                ) : ''
-	            );
-	        }
-	    }, {
-	        timer: {
-	            value: null,
-	            interval: null
-	        },
-	        text: "View round",
-	        duration: 2000,
-	        start: function start(dispatch) {
-	            var timer = Math.floor(this.duration / 1000);
-	            dispatch(actions.changeTimer(timer));
-	            this.timer.interval = setInterval(function () {
-	                timer--;
-	                dispatch(actions.changeTimer(timer));
-	            }, 1000);
-	        },
-	        draw: function draw() {
-	            return _react2.default.createElement(
+	                    'h3',
+	                    null,
+	                    data.text
+	                )
+	            ),
+	            this.current.timer ? _react2.default.createElement(
 	                'div',
-	                null,
+	                { className: 'row' },
 	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h3',
-	                        null,
-	                        this.text
-	                    )
-	                ),
-	                this.timer ? _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h2',
-	                        null,
-	                        this.timer.value && this.timer.value.toString()
-	                    )
-	                ) : ''
-	            );
-	        }
-	    }, {
-	        timer: {
-	            value: null,
-	            interval: null
-	        },
-	        text: "Interact round",
-	        duration: 4000,
-	        start: function start(dispatch) {
-	            var timer = Math.floor(this.duration / 1000);
-	            dispatch(actions.changeTimer(timer));
-	            this.timer.interval = setInterval(function () {
-	                timer--;
-	                dispatch(actions.changeTimer(timer));
-	            }, 1000);
-	        },
-	        draw: function draw() {
-	            return _react2.default.createElement(
-	                'div',
-	                null,
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h3',
-	                        null,
-	                        this.text
-	                    )
-	                ),
-	                this.timer ? _react2.default.createElement(
-	                    'div',
-	                    { className: 'row' },
-	                    _react2.default.createElement(
-	                        'h2',
-	                        null,
-	                        this.timer.value && this.timer.value.toString()
-	                    )
-	                ) : ''
-	            );
-	        }
-	    }]
-	};
-
-/***/ },
-/* 245 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.nextRound = exports.setTimer = exports.keyUp = exports.keyDown = exports.moveObject = exports.move = exports.render = undefined;
-	exports.tick = tick;
-	exports.movePlayer = movePlayer;
-	exports.moveRocketRight = moveRocketRight;
-	exports.moveRocketLeft = moveRocketLeft;
-	exports.changeTimer = changeTimer;
-	exports.startRound = startRound;
-
-	var _global = __webpack_require__(236);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	function tick() {
-	    return function (dispatch, getState) {
-	        switch (getState().rounds.current) {
-	            case 0:
-	                break;
-	            case 1:
-	                dispatch(render(false));
-	                dispatch(moveRocketRight(getState().keyboard.direction));
-	                dispatch(moveRocketLeft(getState().keyboard.direction));
-	                dispatch(render(true));
-	                break;
-	            case 2:
-	                dispatch(render(false));
-	                dispatch(movePlayer(getState().keyboard.direction));
-	                dispatch(movePlayer(getState().keyboard.direction));
-	                dispatch(render(true));
-	                break;
-	        }
-	    };
-	}
-
-	var render = exports.render = function render(shouldRender) {
-	    return {
-	        type: global.ACTION_RENDER,
-	        shouldRender: shouldRender
-	    };
-	};
-
-	var move = exports.move = function move(direction, object) {
-	    return {
-	        type: global.ACTION_MOVE,
-	        direction: direction,
-	        object: object
-	    };
-	};
-
-	var moveObject = exports.moveObject = function moveObject(position) {
-	    return {
-	        type: global.ACTION_MOVE_OBJECT,
-	        position: position
-	    };
-	};
-
-	function movePlayer(direction) {
-	    return function (dispatch, getState) {
-	        dispatch(move(direction, 'player'));
-
-	        dispatch(moveObject(getState().objects.player.position));
-	    };
-	}
-
-	function moveRocketRight() {
-	    return function (dispatch, getState) {
-	        dispatch(move(global.objects.rocketRight.direction, 'rocketRight'));
-	        dispatch(moveObject(getState().objects.rocketRight.position));
-	    };
-	}
-
-	function moveRocketLeft() {
-	    return function (dispatch, getState) {
-	        dispatch(move(global.objects.rocketLeft.direction, 'rocketLeft'));
-
-	        dispatch(moveObject(getState().objects.rocketLeft.position));
-	    };
-	}
-
-	var keyDown = exports.keyDown = function keyDown(direction) {
-	    return {
-	        type: global.ACTION_KEY_DOWN,
-	        direction: direction
-	    };
-	};
-
-	var keyUp = exports.keyUp = function keyUp(direction) {
-	    return {
-	        type: global.ACTION_KEY_UP,
-	        direction: direction
-	    };
-	};
-
-	var setTimer = exports.setTimer = function setTimer(timer) {
-	    return {
-	        type: global.ACTION_SET_TIMER,
-	        timer: timer
-	    };
-	};
-
-	var nextRound = exports.nextRound = function nextRound(round) {
-	    return {
-	        type: global.ACTION_NEXT_ROUND,
-	        round: round
-	    };
-	};
-
-	function changeTimer(timer) {
-	    return function (dispatch, getState) {
-	        dispatch(setTimer(timer));
-	        if (timer == -1) {
-	            dispatch(startRound(getState().rounds.current + 1));
-	        }
-	    };
-	}
-
-	function startRound(index) {
-	    return function (dispatch, getState) {
-	        if (typeof getState().rounds.list[index] != 'undefined') {
-	            dispatch(nextRound(index));
-	            getState().rounds.list[index].start(dispatch);
-	        }
-	    };
-	}
-
-/***/ },
-/* 246 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _actions = __webpack_require__(245);
-
-	var actions = _interopRequireWildcard(_actions);
-
-	var _global = __webpack_require__(236);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var initGlobalEvents = function initGlobalEvents(dispatch) {
-	    document.addEventListener("keydown", function (target) {
-	        dispatch(actions.keyDown(getDirection(target.keyCode)));
-	    }, false);
-
-	    document.addEventListener("keyup", function (target) {
-	        dispatch(actions.keyUp(getDirection(target.keyCode)));
-	    }, false);
-
-	    setInterval(function () {
-	        dispatch(actions.tick());
-	    }, global.playground.tick);
-
-	    dispatch(actions.startRound(0));
-	};
-
-	function getDirection(code) {
-	    switch (code) {
-	        case 38:
-	            return 'up';
-	        case 39:
-	            return 'right';
-	        case 40:
-	            return 'down';
-	        case 37:
-	            return 'left';
+	                    'h2',
+	                    null,
+	                    this.current.timer.value && this.current.timer.value.toString()
+	                )
+	            ) : ''
+	        );
 	    }
-	}
+	};
 
-	exports.default = initGlobalEvents;
+/***/ },
+/* 241 */,
+/* 242 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _global = __webpack_require__(230);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Spark = function () {
+	    function Spark(type, hp, size, position, direction) {
+	        _classCallCheck(this, Spark);
+
+	        this.type = type;
+	        this.hp = {
+	            max: hp,
+	            current: hp * 0.9
+	        };
+	        this.size = size;
+	        this.position = position;
+	        this.position.prev = Object.assign({}, this.position.current);
+	        this.direction = direction;
+	    }
+
+	    _createClass(Spark, [{
+	        key: 'getColor',
+	        value: function getColor() {
+	            var percentage = Math.floor(100 / this.hp.max * this.hp.current);
+	            var part = Math.floor(255 / 100 * percentage).toString(16);
+	            if (part < 10) {
+	                return '#FF' + '0' + part + '0' + part;
+	            }
+	            return '#FF' + part + part;
+	        }
+	    }, {
+	        key: 'changePosition',
+	        value: function changePosition(yOffset, xOffset) {
+	            this.position.current.y += yOffset;
+	            this.position.current.x += xOffset;
+	        }
+	    }, {
+	        key: 'isMoved',
+	        value: function isMoved() {
+	            return !global.isEqualPositions(this.position.prev, this.position.current);
+	        }
+	    }, {
+	        key: 'move',
+	        value: function move(direction) {
+	            this.position.prev = Object.assign({}, this.position.current);
+	            for (var line in direction) {
+	                if (!direction[line]) {
+	                    continue;
+	                }
+	                switch (line) {
+	                    case 'up':
+	                        if (this.position.current.y > 0) {
+	                            this.changePosition(-1, 0);
+	                        }
+	                        break;
+	                    case 'right':
+	                        if (this.position.current.x < global.playground.size.x - global.objectSize) {
+	                            this.changePosition(0, 1);
+	                        }
+	                        break;
+	                    case 'down':
+	                        if (this.position.current.y < global.playground.size.y - global.objectSize) {
+	                            this.changePosition(1, 0);
+	                        }
+	                        break;
+	                    case 'left':
+	                        if (this.position.current.x > 0) {
+	                            this.changePosition(0, -1);
+	                        }
+	                        break;
+	                }
+	            }
+	        }
+	    }]);
+
+	    return Spark;
+	}();
+
+	exports.default = Spark;
 
 /***/ }
 /******/ ]);
