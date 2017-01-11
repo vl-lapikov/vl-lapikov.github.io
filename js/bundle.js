@@ -76,7 +76,7 @@
 
 	var _initial2 = _interopRequireDefault(_initial);
 
-	var _events = __webpack_require__(235);
+	var _events = __webpack_require__(239);
 
 	var _events2 = _interopRequireDefault(_events);
 
@@ -25128,15 +25128,15 @@
 
 	var global = _interopRequireWildcard(_global);
 
-	var _playground = __webpack_require__(237);
+	var _playground = __webpack_require__(235);
 
 	var _playground2 = _interopRequireDefault(_playground);
 
-	var _Spark = __webpack_require__(242);
+	var _Spark = __webpack_require__(236);
 
 	var _Spark2 = _interopRequireDefault(_Spark);
 
-	var _rounds = __webpack_require__(240);
+	var _rounds = __webpack_require__(237);
 
 	var _rounds2 = _interopRequireDefault(_rounds);
 
@@ -25169,172 +25169,6 @@
 
 /***/ },
 /* 235 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _actions = __webpack_require__(236);
-
-	var actions = _interopRequireWildcard(_actions);
-
-	var _global = __webpack_require__(230);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var initGlobalEvents = function initGlobalEvents(dispatch) {
-	    document.addEventListener("keydown", function (target) {
-	        dispatch(actions.keyDown(getDirection(target.keyCode)));
-	    }, false);
-
-	    document.addEventListener("keyup", function (target) {
-	        dispatch(actions.keyUp(getDirection(target.keyCode)));
-	    }, false);
-
-	    setInterval(function () {
-	        dispatch(actions.tick());
-	    }, global.playground.tick);
-
-	    dispatch(actions.startRound(1));
-	};
-
-	function getDirection(code) {
-	    switch (code) {
-	        case 38:
-	            return 'up';
-	        case 39:
-	            return 'right';
-	        case 40:
-	            return 'down';
-	        case 37:
-	            return 'left';
-	    }
-	}
-
-	exports.default = initGlobalEvents;
-
-/***/ },
-/* 236 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.keyUp = exports.keyDown = exports.moveObject = exports.move = exports.render = undefined;
-	exports.tick = tick;
-	exports.changeTimer = changeTimer;
-	exports.startRound = startRound;
-
-	var _global = __webpack_require__(230);
-
-	var global = _interopRequireWildcard(_global);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	function tick() {
-	    return function (dispatch, getState) {
-	        switch (getState().rounds.current.id) {
-	            case 0:
-	                break;
-	            case 1:
-	                dispatch(render(false));
-	                getState().objects.forEach(function (item, objectId) {
-	                    switch (item.type) {
-	                        case 'rocket':
-	                            item.hp.current--;
-	                            dispatch(move(objectId, item.direction));
-	                            dispatch(moveObject(getState().objects[objectId]));
-	                    }
-	                });
-	                dispatch(render(true));
-	                break;
-	            case 2:
-	                dispatch(render(false));
-	                getState().objects.forEach(function (item, objectId) {
-	                    switch (item.type) {
-	                        case 'player':
-	                            dispatch(move(objectId, getState().keyboard.direction));
-	                            if (getState().objects[objectId].isMoved()) {
-	                                getState().objects[objectId].hp.current--;
-	                            }
-	                            dispatch(moveObject(getState().objects[objectId]));
-	                    }
-	                });
-	                dispatch(render(true));
-	                break;
-	        }
-	    };
-	}
-
-	var render = exports.render = function render(shouldRender) {
-	    return {
-	        type: global.ACTION_RENDER,
-	        shouldRender: shouldRender
-	    };
-	};
-
-	var move = exports.move = function move(objectId, direction) {
-	    return {
-	        type: global.ACTION_MOVE,
-	        direction: direction,
-	        objectId: objectId
-	    };
-	};
-
-	var moveObject = exports.moveObject = function moveObject(object) {
-	    return {
-	        type: global.ACTION_MOVE_OBJECT,
-	        object: object
-	    };
-	};
-
-	var keyDown = exports.keyDown = function keyDown(direction) {
-	    return {
-	        type: global.ACTION_KEY_DOWN,
-	        direction: direction
-	    };
-	};
-
-	var keyUp = exports.keyUp = function keyUp(direction) {
-	    return {
-	        type: global.ACTION_KEY_UP,
-	        direction: direction
-	    };
-	};
-
-	function changeTimer(timer) {
-	    return function (dispatch, getState) {
-	        dispatch({
-	            type: global.ACTION_SET_TIMER,
-	            timer: timer
-	        });
-	        if (timer == -1) {
-	            dispatch(startRound(getState().rounds.current.id + 1));
-	        }
-	    };
-	}
-
-	function startRound(round) {
-	    return function (dispatch, getState) {
-	        if (typeof getState().rounds.list[round] != 'undefined') {
-	            dispatch({
-	                type: global.ACTION_SET_ROUND,
-	                round: round
-	            });
-	            getState().rounds.start(dispatch);
-	        }
-	    };
-	}
-
-/***/ },
-/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25387,9 +25221,7 @@
 	exports.default = playground;
 
 /***/ },
-/* 238 */,
-/* 239 */,
-/* 240 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25398,7 +25230,112 @@
 	    value: true
 	});
 
-	var _actions = __webpack_require__(236);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _global = __webpack_require__(230);
+
+	var global = _interopRequireWildcard(_global);
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Spark = function () {
+	    function Spark(type, hp, size, position, direction) {
+	        _classCallCheck(this, Spark);
+
+	        this.type = type;
+	        this.hp = {
+	            max: hp,
+	            current: hp * 0.9
+	        };
+	        this.size = size;
+	        this.position = position;
+	        this.position.prev = Object.assign({}, this.position.current);
+	        this.direction = direction;
+	    }
+
+	    _createClass(Spark, [{
+	        key: 'getColor',
+	        value: function getColor() {
+	            if (this.hp.current < 1) {
+	                return '#FF0000';
+	            }
+	            var percentage = Math.floor(100 / this.hp.max * this.hp.current);
+	            var part = Math.floor(255 / 100 * percentage).toString(16);
+	            var color = '#FF' + part + part;
+	            if (part.length == 1) {
+	                color = '#FF' + '0' + part + '0' + part;
+	            }
+	            return color;
+	        }
+	    }, {
+	        key: 'changePosition',
+	        value: function changePosition(yOffset, xOffset) {
+	            this.position.current.y += yOffset;
+	            this.position.current.x += xOffset;
+	        }
+	    }, {
+	        key: 'isMoved',
+	        value: function isMoved() {
+	            return !global.isEqualPositions(this.position.prev, this.position.current);
+	        }
+	    }, {
+	        key: 'move',
+	        value: function move(direction) {
+	            this.position.prev = Object.assign({}, this.position.current);
+	            for (var line in direction) {
+	                if (!direction[line]) {
+	                    continue;
+	                }
+	                switch (line) {
+	                    case 'up':
+	                        if (this.position.current.y > 0) {
+	                            this.changePosition(-1, 0);
+	                        }
+	                        break;
+	                    case 'right':
+	                        if (this.position.current.x < global.playground.size.x - global.objectSize) {
+	                            this.changePosition(0, 1);
+	                        }
+	                        break;
+	                    case 'down':
+	                        if (this.position.current.y < global.playground.size.y - global.objectSize) {
+	                            this.changePosition(1, 0);
+	                        }
+	                        break;
+	                    case 'left':
+	                        if (this.position.current.x > 0) {
+	                            this.changePosition(0, -1);
+	                        }
+	                        break;
+	                }
+	            }
+	        }
+	    }]);
+
+	    return Spark;
+	}();
+
+	exports.default = Spark;
+
+/***/ },
+/* 237 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _actions = __webpack_require__(238);
 
 	var actions = _interopRequireWildcard(_actions);
 
@@ -25471,8 +25408,122 @@
 	};
 
 /***/ },
-/* 241 */,
-/* 242 */
+/* 238 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.keyUp = exports.keyDown = exports.moveObject = exports.move = exports.render = undefined;
+	exports.tick = tick;
+	exports.changeTimer = changeTimer;
+	exports.startRound = startRound;
+
+	var _global = __webpack_require__(230);
+
+	var global = _interopRequireWildcard(_global);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function tick() {
+	    return function (dispatch, getState) {
+	        switch (getState().rounds.current.id) {
+	            case 0:
+	                break;
+	            case 1:
+	                dispatch(render(false));
+	                getState().objects.forEach(function (item, objectId) {
+	                    switch (item.type) {
+	                        case 'rocket':
+	                            item.hp.current--;
+	                            dispatch(move(objectId, item.direction));
+	                            dispatch(moveObject(getState().objects[objectId]));
+	                    }
+	                });
+	                dispatch(render(true));
+	                break;
+	            case 2:
+	                getState().objects.forEach(function (item, objectId) {
+	                    switch (item.type) {
+	                        case 'player':
+	                            dispatch(move(objectId, getState().keyboard.direction));
+	                            if (getState().objects[objectId].isMoved()) {
+	                                dispatch(render(false));
+	                                getState().objects[objectId].hp.current--;
+	                                dispatch(moveObject(getState().objects[objectId]));
+	                                dispatch(render(true));
+	                            }
+	                    }
+	                });
+	                break;
+	        }
+	    };
+	}
+
+	var render = exports.render = function render(shouldRender) {
+	    return {
+	        type: global.ACTION_RENDER,
+	        shouldRender: shouldRender
+	    };
+	};
+
+	var move = exports.move = function move(objectId, direction) {
+	    return {
+	        type: global.ACTION_MOVE,
+	        direction: direction,
+	        objectId: objectId
+	    };
+	};
+
+	var moveObject = exports.moveObject = function moveObject(object) {
+	    return {
+	        type: global.ACTION_MOVE_OBJECT,
+	        object: object
+	    };
+	};
+
+	var keyDown = exports.keyDown = function keyDown(direction) {
+	    return {
+	        type: global.ACTION_KEY_DOWN,
+	        direction: direction
+	    };
+	};
+
+	var keyUp = exports.keyUp = function keyUp(direction) {
+	    return {
+	        type: global.ACTION_KEY_UP,
+	        direction: direction
+	    };
+	};
+
+	function changeTimer(timer) {
+	    return function (dispatch, getState) {
+	        dispatch({
+	            type: global.ACTION_SET_TIMER,
+	            timer: timer
+	        });
+	        if (timer == -1) {
+	            dispatch(startRound(getState().rounds.current.id + 1));
+	        }
+	    };
+	}
+
+	function startRound(round) {
+	    return function (dispatch, getState) {
+	        if (typeof getState().rounds.list[round] != 'undefined') {
+	            dispatch({
+	                type: global.ACTION_SET_ROUND,
+	                round: round
+	            });
+	            getState().rounds.start(dispatch);
+	        }
+	    };
+	}
+
+/***/ },
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25481,96 +25532,46 @@
 	    value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _actions = __webpack_require__(238);
+
+	var actions = _interopRequireWildcard(_actions);
 
 	var _global = __webpack_require__(230);
 
 	var global = _interopRequireWildcard(_global);
 
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var initGlobalEvents = function initGlobalEvents(dispatch) {
+	    document.addEventListener("keydown", function (target) {
+	        dispatch(actions.keyDown(getDirection(target.keyCode)));
+	    }, false);
 
-	var Spark = function () {
-	    function Spark(type, hp, size, position, direction) {
-	        _classCallCheck(this, Spark);
+	    document.addEventListener("keyup", function (target) {
+	        dispatch(actions.keyUp(getDirection(target.keyCode)));
+	    }, false);
 
-	        this.type = type;
-	        this.hp = {
-	            max: hp,
-	            current: hp * 0.9
-	        };
-	        this.size = size;
-	        this.position = position;
-	        this.position.prev = Object.assign({}, this.position.current);
-	        this.direction = direction;
+	    setInterval(function () {
+	        dispatch(actions.tick());
+	    }, global.playground.tick);
+
+	    dispatch(actions.startRound(2));
+	};
+
+	function getDirection(code) {
+	    switch (code) {
+	        case 38:
+	            return 'up';
+	        case 39:
+	            return 'right';
+	        case 40:
+	            return 'down';
+	        case 37:
+	            return 'left';
 	    }
+	}
 
-	    _createClass(Spark, [{
-	        key: 'getColor',
-	        value: function getColor() {
-	            var percentage = Math.floor(100 / this.hp.max * this.hp.current);
-	            var part = Math.floor(255 / 100 * percentage).toString(16);
-	            if (part < 10) {
-	                return '#FF' + '0' + part + '0' + part;
-	            }
-	            return '#FF' + part + part;
-	        }
-	    }, {
-	        key: 'changePosition',
-	        value: function changePosition(yOffset, xOffset) {
-	            this.position.current.y += yOffset;
-	            this.position.current.x += xOffset;
-	        }
-	    }, {
-	        key: 'isMoved',
-	        value: function isMoved() {
-	            return !global.isEqualPositions(this.position.prev, this.position.current);
-	        }
-	    }, {
-	        key: 'move',
-	        value: function move(direction) {
-	            this.position.prev = Object.assign({}, this.position.current);
-	            for (var line in direction) {
-	                if (!direction[line]) {
-	                    continue;
-	                }
-	                switch (line) {
-	                    case 'up':
-	                        if (this.position.current.y > 0) {
-	                            this.changePosition(-1, 0);
-	                        }
-	                        break;
-	                    case 'right':
-	                        if (this.position.current.x < global.playground.size.x - global.objectSize) {
-	                            this.changePosition(0, 1);
-	                        }
-	                        break;
-	                    case 'down':
-	                        if (this.position.current.y < global.playground.size.y - global.objectSize) {
-	                            this.changePosition(1, 0);
-	                        }
-	                        break;
-	                    case 'left':
-	                        if (this.position.current.x > 0) {
-	                            this.changePosition(0, -1);
-	                        }
-	                        break;
-	                }
-	            }
-	        }
-	    }]);
-
-	    return Spark;
-	}();
-
-	exports.default = Spark;
+	exports.default = initGlobalEvents;
 
 /***/ }
 /******/ ]);
