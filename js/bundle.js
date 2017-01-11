@@ -25555,7 +25555,7 @@
 	        dispatch(actions.tick());
 	    }, global.playground.tick);
 
-	    dispatch(actions.startRound(2));
+	    dispatch(actions.startRound(0));
 	};
 
 	function getDirection(code) {
