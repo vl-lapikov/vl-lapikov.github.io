@@ -24647,7 +24647,7 @@
 	                _react2.default.createElement(
 	                    'div',
 	                    { className: 'col' },
-	                    _react2.default.createElement(_Grid2.default, { playground: playground, percentage: rounds.current.percentage })
+	                    _react2.default.createElement(_Grid2.default, { playground: playground, percentage: rounds.current.percentage, rounds: rounds })
 	                )
 	            );
 	        }
@@ -24708,6 +24708,10 @@
 	                    backgroundColor: color
 	                };
 
+	                if (colIndex == Math.floor(_this.props.playground.size.x / 2) && rowIndex == Math.floor(_this.props.playground.size.y / 2)) {
+	                    objects.push(_this.props.rounds.drawTimer());
+	                }
+
 	                result.push(_react2.default.createElement(
 	                    'div',
 	                    { key: 'column' + colIndex, className: 'cell', style: style },
@@ -24757,7 +24761,8 @@
 
 	Grid.propTypes = {
 	    playground: _react.PropTypes.object.isRequired,
-	    percentage: _react2.default.PropTypes.number
+	    percentage: _react2.default.PropTypes.number,
+	    rounds: _react.PropTypes.object.isRequired
 	};
 	exports.default = (0, _reactRedux.connect)()(Grid);
 
@@ -25155,8 +25160,6 @@
 	            }
 	            var grid = Object.assign([], state.grid);
 
-	            console.log(grid[position.prev.y][position.prev.x].objects[0]);
-
 	            grid[position.current.y][position.current.x].objects.push(grid[position.prev.y][position.prev.x].objects[0]);
 	            grid[position.prev.y][position.prev.x].color = action.object.getColor();
 	            grid[position.prev.y][position.prev.x].objects = [];
@@ -25403,7 +25406,47 @@
 	    direction: global.directionNull
 	};
 
-	var objects = [new _Spark2.default('player', global.hp * 2, global.objectSize, global.objects.player.position, global.directionNull), new _Spark2.default('rocket', global.hp, global.objectSize, global.objects.rocketLeft.position, global.objects.rocketLeft.direction), new _Spark2.default('rocket', global.hp, global.objectSize, global.objects.rocketRight.position, global.objects.rocketRight.direction)];
+	var directions = [Object.assign({}, global.directionNull, {
+	    up: true
+	}), Object.assign({}, global.directionNull, {
+	    up: true,
+	    right: true
+	}), Object.assign({}, global.directionNull, {
+	    right: true
+	}), Object.assign({}, global.directionNull, {
+	    right: true,
+	    down: true
+	}), Object.assign({}, global.directionNull, {
+	    down: true
+	}), Object.assign({}, global.directionNull, {
+	    down: true,
+	    left: true
+	}), Object.assign({}, global.directionNull, {
+	    left: true
+	}), Object.assign({}, global.directionNull, {
+	    left: true,
+	    up: true
+	})];
+
+	var objects = [new _Spark2.default('player', global.hp * 3, global.objectSize, global.objects.player.position, global.directionNull),
+	//new Spark('rocket', global.hp, global.objectSize, global.objects.rocketLeft.position, global.objects.rocketLeft.direction),
+	//new Spark('rocket', global.hp, global.objectSize, global.objects.rocketRight.position, global.objects.rocketRight.direction)
+	randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket()];
+
+	function randomRocket() {
+	    var hp = global.hp * Math.random() + 20;
+	    if (hp > global.hp) {
+	        hp = global.hp;
+	    }
+	    var position = {
+	        current: {
+	            y: Math.floor(_playground2.default.size.y * Math.random()),
+	            x: Math.floor(_playground2.default.size.x * Math.random())
+	        }
+	    };
+	    var direction = directions[Math.floor(Math.random() * 7 + 1)];
+	    return new _Spark2.default('rocket', hp, global.objectSize, position, direction);
+	}
 
 	objects.forEach(function (item) {
 	    _playground2.default.updateObjectOnGrid(item);
@@ -25460,6 +25503,7 @@
 	        this.direction = direction;
 	        this.pathIndex = 0;
 	        this.path = [];
+	        this.alive = true;
 	    }
 
 	    _createClass(Spark, [{
@@ -25468,11 +25512,13 @@
 	            this.hp.current = this.hp.max;
 	            this.position.current = Object.assign({}, this.position.intial);
 	            this.position.prev = Object.assign({}, this.position.intial);
+	            this.alive = true;
 	        }
 	    }, {
 	        key: 'getColor',
 	        value: function getColor() {
 	            if (this.hp.current < 1) {
+	                this.alive = false;
 	                return '#FF0000';
 	            }
 	            var percentage = Math.floor(100 / this.hp.max * this.hp.current);
@@ -25492,7 +25538,7 @@
 	    }, {
 	        key: 'isMoved',
 	        value: function isMoved() {
-	            return !global.isEqualPositions(this.position.prev, this.position.current);
+	            return !global.isEqualPositions(this.position.prev, this.position.current) && this.alive;
 	        }
 	    }, {
 	        key: 'move',
@@ -25626,6 +25672,21 @@
 	                )
 	            ) : ''
 	        );
+	    },
+	    drawTimer: function drawTimer() {
+	        return _react2.default.createElement(
+	            'div',
+	            { key: 'timer', className: 'timer' },
+	            this.current.timer ? _react2.default.createElement(
+	                'div',
+	                { className: 'row' },
+	                _react2.default.createElement(
+	                    'h2',
+	                    null,
+	                    this.current.timer.value && this.current.timer.value.toString()
+	                )
+	            ) : ''
+	        );
 	    }
 	};
 
@@ -25662,6 +25723,7 @@
 	                    switch (item.type) {
 	                        case 'rocket':
 	                            item.hp.current--;
+	                            console.log(item.hp.current);
 	                            dispatch(move(objectId, item.direction));
 	                            dispatch(moveObject(getState().objects[objectId]));
 	                    }
@@ -25691,6 +25753,7 @@
 	                    switch (item.type) {
 	                        case 'rocket':
 	                            item.hp.current--;
+	                            console.log(item.hp.current);
 	                            dispatch(move(objectId, item.direction));
 	                            dispatch(moveObject(getState().objects[objectId]));
 	                            break;
