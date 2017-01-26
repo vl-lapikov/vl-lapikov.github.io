@@ -24816,7 +24816,8 @@
 	            tick: global.playground.tick,
 	            round1: global.playground.round1,
 	            round2: global.playground.round2,
-	            round3: global.playground.round3
+	            round3: global.playground.round3,
+	            rockets: global.playground.rockets
 	        };
 	        return _this;
 	    }
@@ -24826,12 +24827,6 @@
 	        value: function handleChange(property, event) {
 	            this.setState(_defineProperty({}, property, event.target.value));
 	            functions.createCookie(property, event.target.value, 1);
-	        }
-	    }, {
-	        key: 'changeRound3',
-	        value: function changeRound3(event) {
-	            this.setState({ tick: event.target.value });
-	            functions.createCookie('tick', event.target.value, 1);
 	        }
 	    }, {
 	        key: 'render',
@@ -24865,7 +24860,7 @@
 	                _react2.default.createElement('input', {
 	                    type: 'text',
 	                    className: 'form-control',
-	                    placeholder: 3000,
+	                    placeholder: 1000,
 	                    value: this.state.round1,
 	                    onChange: this.handleChange.bind(this, 'round1')
 	                }),
@@ -24889,9 +24884,21 @@
 	                _react2.default.createElement('input', {
 	                    type: 'text',
 	                    className: 'form-control',
-	                    placeholder: 5000,
+	                    placeholder: 12000,
 	                    value: this.state.round3,
 	                    onChange: this.handleChange.bind(this, 'round3')
+	                }),
+	                _react2.default.createElement(
+	                    'label',
+	                    null,
+	                    'Random rockets'
+	                ),
+	                _react2.default.createElement('input', {
+	                    type: 'text',
+	                    className: 'form-control',
+	                    placeholder: 7,
+	                    value: this.state.rockets,
+	                    onChange: this.handleChange.bind(this, 'rockets')
 	                })
 	            );
 	        }
@@ -24928,10 +24935,11 @@
 	};
 
 	playground.tick = parseInt(functions.getCookie('tick')) ? functions.getCookie('tick') : 50;
-	playground.round1 = parseInt(functions.getCookie('round1')) ? functions.getCookie('round1') : 3000;
+	playground.round1 = parseInt(functions.getCookie('round1')) ? functions.getCookie('round1') : 1000;
 	playground.round2 = parseInt(functions.getCookie('round2')) ? functions.getCookie('round2') : 3000;
-	playground.round3 = parseInt(functions.getCookie('round3')) ? functions.getCookie('round3') : 3000;
+	playground.round3 = parseInt(functions.getCookie('round3')) ? functions.getCookie('round3') : 12000;
 	playground.round4 = playground.round3;
+	playground.rockets = parseInt(functions.getCookie('rockets')) ? functions.getCookie('rockets') : 7;
 
 	var hp = exports.hp = 40;
 	var objectSize = exports.objectSize = 1;
@@ -25160,6 +25168,10 @@
 	            }
 	            var grid = Object.assign([], state.grid);
 
+	            if (typeof grid[position.prev.y][position.prev.x].objects[0] == 'undefined') {
+	                return state;
+	            }
+
 	            grid[position.current.y][position.current.x].objects.push(grid[position.prev.y][position.prev.x].objects[0]);
 	            grid[position.prev.y][position.prev.x].color = action.object.getColor();
 	            grid[position.prev.y][position.prev.x].objects = [];
@@ -25354,8 +25366,6 @@
 	                current.timer = timer;
 	            }
 
-	            console.log('Timer: ' + timer.value);
-
 	            return _extends({}, state);
 
 	        case global.ACTION_SET_ROUND:
@@ -25428,10 +25438,11 @@
 	    up: true
 	})];
 
-	var objects = [new _Spark2.default('player', global.hp * 3, global.objectSize, global.objects.player.position, global.directionNull),
-	//new Spark('rocket', global.hp, global.objectSize, global.objects.rocketLeft.position, global.objects.rocketLeft.direction),
-	//new Spark('rocket', global.hp, global.objectSize, global.objects.rocketRight.position, global.objects.rocketRight.direction)
-	randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket(), randomRocket()];
+	var objects = [new _Spark2.default('player', global.hp * 3, global.objectSize, global.objects.player.position, global.directionNull)];
+
+	for (var i = 0; i < global.playground.rockets; i++) {
+	    objects.push(randomRocket());
+	}
 
 	function randomRocket() {
 	    var hp = global.hp * Math.random() + 20;
@@ -25723,7 +25734,6 @@
 	                    switch (item.type) {
 	                        case 'rocket':
 	                            item.hp.current--;
-	                            console.log(item.hp.current);
 	                            dispatch(move(objectId, item.direction));
 	                            dispatch(moveObject(getState().objects[objectId]));
 	                    }
@@ -25753,7 +25763,6 @@
 	                    switch (item.type) {
 	                        case 'rocket':
 	                            item.hp.current--;
-	                            console.log(item.hp.current);
 	                            dispatch(move(objectId, item.direction));
 	                            dispatch(moveObject(getState().objects[objectId]));
 	                            break;
